@@ -2,6 +2,7 @@ package main
 
 import (
 	"crypto/tls"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -26,14 +27,15 @@ var (
 )
 
 type metadata struct {
-	Title        string   `yaml:"title"`
-	Description  string   `fm:"content" yaml:"-"`
-	Confidential bool     `yaml:"confidential"`
-	Assignees    []string `yaml:"assignees,flow"`
-	Labels       []string `yaml:"labels,flow"`
-	DueIn        string   `yaml:"duein"`
-	Crontab      string   `yaml:"crontab"`
-	NextTime     time.Time
+	Title            string   `yaml:"title"`
+	Description      string   `fm:"content" yaml:"-"`
+	Confidential     bool     `yaml:"confidential"`
+	Assignees        []string `yaml:"assignees,flow"`
+	Labels           []string `yaml:"labels,flow"`
+	DueIn            string   `yaml:"duein"`
+	Crontab          string   `yaml:"crontab"`
+	WeeklyRecurrence int      `yaml:"weeklyRecurrence"`
+	NextTime         time.Time
 }
 
 func processIssueFile(lastTime time.Time) filepath.WalkFunc {
@@ -63,6 +65,33 @@ func processIssueFile(lastTime time.Time) filepath.WalkFunc {
 
 		data.NextTime = cronExpression.Next(lastTime)
 
+		if data.WeeklyRecurrence > 1 {
+			git, err := getGitClient()
+			if err != nil {
+				return err
+			}
+			project, err := getGitProject(git)
+			if err != nil {
+				return err
+			}
+			orderBy := "created_at"
+			options := &gitlab.ListProjectIssuesOptions{
+				Search:  &data.Title,
+				OrderBy: &orderBy,
+			}
+			issues, _, err := git.Issues.ListProjectIssues(project.ID, options)
+			lastIssueDate := *issues[0].CreatedAt
+			durationSinceLastIssue := time.Now().Sub(lastIssueDate)
+			neededHoursForRecreation := fmt.Sprint(24*7*data.WeeklyRecurrence-1, "h") // - 1h for variations in execution time
+			neededDurationForRecreation, err := time.ParseDuration(neededHoursForRecreation)
+			if err != nil {
+				return err
+			}
+			if durationSinceLastIssue < neededDurationForRecreation {
+				data.NextTime = cronExpression.Next(lastTime).Add(neededDurationForRecreation - durationSinceLastIssue)
+			}
+		}
+
 		if data.NextTime.Before(time.Now()) {
 			log.Println(path, "was due", data.NextTime.Format(time.RFC3339), "- creating new issue")
 
@@ -88,20 +117,28 @@ func parseMetadata(contents []byte) (*metadata, error) {
 	return data, nil
 }
 
-func createIssue(data *metadata) error {
+func getGitClient() (*gitlab.Client, error) {
 	transCfg := &http.Transport{
 		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 	}
 	httpClient := &http.Client{
 		Transport: transCfg,
 	}
+	return gitlab.NewClient(gitlabAPIToken, gitlab.WithBaseURL(ciAPIV4URL), gitlab.WithHTTPClient(httpClient))
+}
 
-	git, err := gitlab.NewClient(gitlabAPIToken, gitlab.WithBaseURL(ciAPIV4URL), gitlab.WithHTTPClient(httpClient))
+func getGitProject(git *gitlab.Client) (*gitlab.Project, error) {
+	project, _, err := git.Projects.GetProject(ciProjectID, nil)
+	return project, err
+}
+
+func createIssue(data *metadata) error {
+	git, err := getGitClient()
 	if err != nil {
 		return err
 	}
 
-	project, _, err := git.Projects.GetProject(ciProjectID, nil)
+	project, err := getGitProject(git)
 	if err != nil {
 		return err
 	}
