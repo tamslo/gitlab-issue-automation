@@ -7,7 +7,8 @@ RUN set -ex && \
   CGO_ENABLED=0 go build \
         -tags netgo \
         -v -a \
-        -ldflags '-extldflags "-static"' && \
+        -ldflags '-extldflags "-static"' \
+        -buildvcs=false  && \
   mv ./gitlab-recurring-issues /usr/bin/gitlab-recurring-issues
 
 FROM busybox

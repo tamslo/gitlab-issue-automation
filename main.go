@@ -8,6 +8,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/ericaro/frontmatter"
@@ -110,6 +111,7 @@ func createIssue(data *metadata) error {
 		Description:  gitlab.String(data.Description),
 		Confidential: &data.Confidential,
 		CreatedAt:    &data.NextTime,
+		Labels:       &gitlab.Labels{strings.Join(data.Labels, ",")},
 	}
 
 	if data.DueIn != "" {
