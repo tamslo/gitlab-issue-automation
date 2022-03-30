@@ -106,6 +106,13 @@ func createIssue(data *metadata) error {
 		return err
 	}
 
+	monthPlaceholder := "{last_month}"
+	if strings.Contains(data.Title, monthPlaceholder) {
+		_, currentMonth, _ := time.Now().Date()
+		lastMonth := currentMonth - 1
+		data.Title = strings.ReplaceAll(data.Title, monthPlaceholder, lastMonth.String())
+	}
+
 	options := &gitlab.CreateIssueOptions{
 		Title:        gitlab.String(data.Title),
 		Description:  gitlab.String(data.Description),
