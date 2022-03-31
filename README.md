@@ -11,10 +11,10 @@ Create template issues in the `.gitlab/recurring_issue_templates/` directory as 
 ```markdown
 ---
 title: "Biweekly reminder" # The issue title
-labels: ["important", "to do"] # Optional list of labels (will be created if not present)
-confidential: false
-duein: "24h" # Time to due date from `crontab` as per https://pkg.go.dev/time?tab=doc#ParseDuration (e.g "30m", "1h")
-crontab: "@weekly" # The recurrance schedule using crontab syntax, such as "*/30 * * * *", or a predefined value of @annually, @yearly, @monthly, @weekly, or @daily
+labels: ["important", "to do"] # Optional; list of labels (will be created if not present)
+confidential: false # Optional; defines visibility of issue (default for bool in Go is false)
+duein: "24h" # Optional; time to due date from `crontab` as per https://pkg.go.dev/time?tab=doc#ParseDuration (e.g "30m", "1h")
+crontab: "@weekly" # The recurrance schedule for issue creation using crontab syntax
 weeklyRecurrence: 2 # Optional; if stated, the `crontab` condition will only be applied to every n-th week, based on titles of present issues
 ---
 (**You need to give a description, otherwise parsing will fail!**)
