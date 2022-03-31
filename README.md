@@ -11,9 +11,11 @@ Create template issues in the `.gitlab/recurring_issue_templates/` directory as 
 ```markdown
 ---
 title: "Daily reminder" # The issue title
+labels: ["important", "to do"] # List of labels (will be created if not present)
 confidential: false
 duein: "24h" # Duration string as per https://pkg.go.dev/time?tab=doc#ParseDuration (e.g "30m", "1h")
 crontab: "@daily" # The recurrance schedule using crontab syntax, such as "*/30 * * * *", or a predefined value of @annually, @yearly, @monthly, @weekly, or @daily
+weeklyRecurrence: 2 # If given, the `crontab` condition will only be applied to every n-th week (based on titles of present issues) 
 ---
 This is your daily reminder to perform the following actions (**you need to give a description, otherwise parsing will fail**)
 
