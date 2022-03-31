@@ -2,9 +2,11 @@
 
 A Docker image for creating recurring issues based on templates as part of a GitLab scheduled pipeline.
 
+Forked from ⭐ [ph1ll/gitlab-recurring-issues](https://github.com/ph1ll/gitlab-recurring-issues).
+
 ## Usage
 
-Create template issues in the `.gitlab/recurring_issue_templates/` directory. Template issues use YAML front matter for configuration settings. The template body is used as the issue description.
+Create template issues in the `.gitlab/recurring_issue_templates/` directory as Markdown files. Template issues use YAML front matter for configuration settings. The template body is used as the issue description.
 
 ```markdown
 ---
@@ -13,7 +15,7 @@ confidential: false
 duein: "24h" # Duration string as per https://pkg.go.dev/time?tab=doc#ParseDuration (e.g "30m", "1h")
 crontab: "@daily" # The recurrance schedule using crontab syntax, such as "*/30 * * * *", or a predefined value of @annually, @yearly, @monthly, @weekly, or @daily
 ---
-This is your daily reminder to perform the following actions
+This is your daily reminder to perform the following actions (**you need to give a description, otherwise parsing will fail**)
 
 * [ ] Action 1
 * [ ] Action 2
@@ -23,7 +25,7 @@ Create a pipeline in the `.gitlab-ci.yml` file:
 
 ```yaml
 recurring issues:
-  image: ph1ll/gitlab-recurring-issues
+  image: tamslo/gitlab-recurring-issues
   script: gitlab-recurring-issues
   only: 
     - schedules
