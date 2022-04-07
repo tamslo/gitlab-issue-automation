@@ -2,9 +2,9 @@ package main
 
 import (
 	"crypto/tls"
-	"fmt"
 	"io/ioutil"
 	"log"
+	"math"
 	"net/http"
 	"os"
 	"path"
@@ -38,6 +38,42 @@ type metadata struct {
 	NextTime         time.Time
 }
 
+func getStartOfWeek(thisTime time.Time) time.Time {
+	thisWeekday := int(thisTime.Weekday())
+	thisDay := time.Date(thisTime.Year(), thisTime.Month(), thisTime.Day(), 0, 0, 0, 0, thisTime.Location())
+	return thisDay.AddDate(0, 0, -thisWeekday)
+}
+
+func getNextExecutionTime(lastTime time.Time, cronExpression *cronexpr.Expression, data *metadata) (time.Time, error) {
+	nextTime := cronExpression.Next(lastTime)
+	if data.WeeklyRecurrence > 1 {
+		git, err := getGitClient()
+		if err != nil {
+			return nextTime, err
+		}
+		project, err := getGitProject(git)
+		if err != nil {
+			return nextTime, err
+		}
+		orderBy := "created_at"
+		options := &gitlab.ListProjectIssuesOptions{
+			Search:  &data.Title,
+			OrderBy: &orderBy,
+		}
+		issues, _, err := git.Issues.ListProjectIssues(project.ID, options)
+		if err != nil {
+			return nextTime, err
+		}
+		lastIssueDate := *issues[0].CreatedAt
+		lastIssueWeek := getStartOfWeek(lastIssueDate)
+		currentWeek := getStartOfWeek(time.Now())
+		nextIssueWeek := lastIssueWeek.AddDate(0, 0, 7*data.WeeklyRecurrence)
+		daysToAdd := math.Round(nextIssueWeek.Sub(currentWeek).Hours() / 24)
+		nextTime = nextTime.AddDate(0, 0, int(daysToAdd))
+	}
+	return nextTime, nil
+}
+
 func processIssueFile(lastTime time.Time) filepath.WalkFunc {
 	return func(path string, info os.FileInfo, err error) error {
 		if err != nil {
@@ -63,35 +99,7 @@ func processIssueFile(lastTime time.Time) filepath.WalkFunc {
 			return err
 		}
 
-		data.NextTime = cronExpression.Next(lastTime)
-
-		if data.WeeklyRecurrence > 1 {
-			git, err := getGitClient()
-			if err != nil {
-				return err
-			}
-			project, err := getGitProject(git)
-			if err != nil {
-				return err
-			}
-			orderBy := "created_at"
-			options := &gitlab.ListProjectIssuesOptions{
-				Search:  &data.Title,
-				OrderBy: &orderBy,
-			}
-			issues, _, err := git.Issues.ListProjectIssues(project.ID, options)
-			lastIssueDate := *issues[0].CreatedAt
-			durationSinceLastIssue := time.Now().Sub(lastIssueDate)
-			neededHoursForRecreation := fmt.Sprint(24*7*data.WeeklyRecurrence-1, "h") // - 1h for variations in execution time
-			neededDurationForRecreation, err := time.ParseDuration(neededHoursForRecreation)
-			if err != nil {
-				return err
-			}
-			if durationSinceLastIssue < neededDurationForRecreation {
-				data.NextTime = cronExpression.Next(lastTime).Add(neededDurationForRecreation - durationSinceLastIssue)
-			}
-		}
-
+		data.NextTime, err = getNextExecutionTime(lastTime, cronExpression, data)
 		if data.NextTime.Before(time.Now()) {
 			log.Println(path, "was due", data.NextTime.Format(time.RFC3339), "- creating new issue")
 
