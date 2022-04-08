@@ -42,3 +42,9 @@ Create project CI/CD variables:
 | GITLAB_API_TOKEN | The API access token for the user account that will create the issues (see: https://docs.gitlab.com/ce/user/profile/personal_access_tokens.html) | 
 
 Finally, create a new schedule under the project CI/CD options, ensuring that the pipeline runs at least as often as your most frequent job.
+
+## Automatically Setting Label for This Week
+
+The script also checks whether labels for custom issue management on a board view exist (see `adaptaLabels`).
+
+If an issue is due this week, the `thisWeekLabel` label will be added if it is not present and no `otherLabels` exist that indicate that the issue is in progress.
