@@ -2,6 +2,7 @@ package main
 
 import (
 	"crypto/tls"
+	"errors"
 	"io/ioutil"
 	"log"
 	"math"
@@ -28,8 +29,11 @@ var (
 	ciProjectID            string = ""
 	ciProjectDir           string = ""
 	ciJobName              string = ""
+	shortISODateLayout     string = "2006-01-02"
+	yearPlaceholder        string = "YEAR"
 	issuesRelativePath     string = ".gitlab/recurring_issue_templates/"
-	exceptionsRelativePath string = "./gitlab/recurring_issue_exceptions.yml"
+	exceptionsRelativePath string = "./gitlab/recurring_issue_templates/recurrance_exceptions.yml"
+	exceptionsExist        bool   = false
 	exceptions             issueExceptions
 )
 
@@ -48,7 +52,7 @@ type metadata struct {
 
 type issueExceptions struct {
 	Definitions []exceptionDefinition `yaml:"definitions"`
-	Issues      []exceptionRule       `yaml:"rules"`
+	Rules       []exceptionRule       `yaml:"rules"`
 }
 
 type exceptionDefinition struct {
@@ -63,8 +67,14 @@ type exceptionRule struct {
 }
 
 func parseExceptions() (issueExceptions, error) {
+	_, err := os.Stat(exceptionsRelativePath)
+	if err != nil {
+		return exceptions, nil
+	}
+	exceptionsExist = true
 	source, err := ioutil.ReadFile(exceptionsRelativePath)
 	if err != nil {
+		log.Println("No exception definition given")
 		return exceptions, err
 	}
 	err = yaml.Unmarshal(source, &exceptions)
@@ -127,8 +137,7 @@ func adaptLabels() error {
 		if issue.DueDate == nil {
 			continue
 		}
-		layout := "2006-01-02"
-		issueDueTime, err := time.Parse(layout, issue.DueDate.String())
+		issueDueTime, err := time.Parse(shortISODateLayout, issue.DueDate.String())
 		if err != nil {
 			return err
 		}
@@ -178,10 +187,70 @@ func getStartOfWeek(thisTime time.Time) time.Time {
 	return thisDay.AddDate(0, 0, -thisWeekday)
 }
 
-func recurranceExceptionPresent(nextTime time.Time, issueId string) bool {
-	// TODO: implement exceptions; handle no ID (skip)
-	// TODO: Describe in README
-	return false
+func recurranceExceptionPresent(nextTime time.Time, recurringIssueId string) (bool, error) {
+	exceptionPresent := false
+	if recurringIssueId == "" {
+		return exceptionPresent, nil
+	}
+	matchingExceptions := []string{}
+	for _, rule := range exceptions.Rules {
+		if rule.Issue == recurringIssueId {
+			matchingExceptions = append(matchingExceptions,
+				rule.Exceptions...)
+		}
+	}
+	log.Println("Recurring issue ID:", recurringIssueId)
+	log.Println("Matching exceptions:", matchingExceptions)
+	for _, exceptionId := range matchingExceptions {
+		definitionFound := false
+		var exception exceptionDefinition
+		for _, definition := range exceptions.Definitions {
+			if exceptionId == definition.Id {
+				definitionFound = true
+				exception = definition
+			}
+		}
+		if !definitionFound {
+			return exceptionPresent, errors.New("Missing recurrance exception definition")
+		}
+		if (strings.Contains(exception.Start, yearPlaceholder) &&
+			!strings.Contains(exception.End, yearPlaceholder)) ||
+			(!strings.Contains(exception.Start, yearPlaceholder) &&
+				strings.Contains(exception.End, yearPlaceholder)) {
+			return exceptionPresent, errors.New("Please use the YEAR place holder always for both dates in the exception definition")
+		}
+		yearFormatLayout := "2006"
+		if strings.Contains(exception.Start, yearPlaceholder) &&
+			strings.Contains(exception.End, yearPlaceholder) {
+			currentYear := time.Now().Format(yearFormatLayout)
+			exception.Start = strings.ReplaceAll(exception.Start, yearPlaceholder, currentYear)
+			exception.End = strings.ReplaceAll(exception.End, yearPlaceholder, currentYear)
+			startTime, err := time.Parse(shortISODateLayout, exception.Start)
+			if err != nil {
+				return exceptionPresent, err
+			}
+			endTime, err := time.Parse(shortISODateLayout, exception.End)
+			if err != nil {
+				return exceptionPresent, err
+			}
+			if startTime.Month() > endTime.Month() {
+				nextYear := time.Now().AddDate(1, 0, 0).Format(yearFormatLayout)
+				exception.End = strings.ReplaceAll(exception.End, currentYear, nextYear)
+			}
+		}
+		startTime, err := time.Parse(shortISODateLayout, exception.Start)
+		if err != nil {
+			return exceptionPresent, err
+		}
+		endTime, err := time.Parse(shortISODateLayout, exception.End)
+		exceptionPresent = startTime.Before(nextTime) && endTime.After(nextTime)
+		if exceptionPresent {
+			log.Print("Exception present for", recurringIssueId)
+			log.Print("(", exception.Id, "from", exception.Start, "to", exception.End)
+			break
+		}
+	}
+	return exceptionPresent, nil
 }
 
 func getNextExecutionTime(lastTime time.Time, cronExpression *cronexpr.Expression, data *metadata) (time.Time, error) {
@@ -212,7 +281,11 @@ func getNextExecutionTime(lastTime time.Time, cronExpression *cronexpr.Expressio
 		nextTime = nextTime.AddDate(0, 0, int(daysToAdd))
 	}
 	for {
-		if recurranceExceptionPresent(nextTime, data.Id) {
+		exceptionIsPresent, err := recurranceExceptionPresent(nextTime, data.Id)
+		if err != nil {
+			return nextTime, err
+		}
+		if exceptionsExist && exceptionIsPresent {
 			nextTime, err := getNextExecutionTime(nextTime, cronExpression, data)
 			if err != nil {
 				return nextTime, err

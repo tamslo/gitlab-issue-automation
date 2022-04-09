@@ -1,4 +1,4 @@
-module github.com/ph1ll/gitlab-recurring-issues
+module github.com/tamslo/gitlab-issue-automation
 
 go 1.14
 

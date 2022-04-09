@@ -45,7 +45,31 @@ Create project CI/CD variables:
 
 Finally, create a new schedule under the project CI/CD options, ensuring that the pipeline runs at least as often as your most frequent job.
 
-## Automatically Setting Label for This Week
+### Adding Recurrance Exceptions
+
+To add exceptions to recurrances, create a file named `recurrance_exceptions.yml` in the templates folder.
+
+It can contain exception definitions and rules that map issues by their IDs (need to be given in the issue template) to exception definitions.
+
+Start and end dates are given in the format `YYYY-MM-DD`. If an exception occurs every year, the placeholder `YEAR` can be given.
+
+```
+definitions:
+  - :
+    id: "christmas-break"
+    start: "YEAR-12-24"
+    end: "YEAR-01-01"
+  - :
+    id: "vacation"
+    start: "2022-05-13"
+    end: "2022-05-20"
+rules:
+  - :
+    issue: "weekly-meeting"
+    exceptions: ["christmas-break", "vacation"]
+```
+
+### Automatically Setting Label for This Week
 
 The script also checks whether labels for custom issue management on a board view exist (see `adaptaLabels`).
 
