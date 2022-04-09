@@ -2,7 +2,9 @@
 
 A Docker image for creating recurring issues based on templates as part of a GitLab scheduled pipeline.
 
-Forked from ⭐ [ph1ll/gitlab-recurring-issues](https://github.com/ph1ll/gitlab-recurring-issues).
+Forked from ⭐ [ph1ll/gitlab-recurring-issues](https://github.com/ph1ll/gitlab-recurring-issues) and adapted for my personal use.
+
+The Docker image is available on [DockerHub](https://hub.docker.com/repository/docker/tamslo/gitlab-issue-automation).
 
 ## Usage
 
