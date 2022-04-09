@@ -12,22 +12,30 @@ import (
 	"strings"
 	"time"
 
+	"gopkg.in/yaml.v2"
+
 	"github.com/ericaro/frontmatter"
 	"github.com/gorhill/cronexpr"
 	"github.com/xanzy/go-gitlab"
 )
 
+// TODO: Refactor to not use global variables and have own modules, e.g., for basic git methods
+// TODO: Test biweekly occurance, adding labels, handling exceptions
+
 var (
-	ciAPIV4URL         string = ""
-	gitlabAPIToken     string = ""
-	ciProjectID        string = ""
-	ciProjectDir       string = ""
-	ciJobName          string = ""
-	issuesRelativePath string = ".gitlab/recurring_issue_templates/"
+	ciAPIV4URL             string = ""
+	gitlabAPIToken         string = ""
+	ciProjectID            string = ""
+	ciProjectDir           string = ""
+	ciJobName              string = ""
+	issuesRelativePath     string = ".gitlab/recurring_issue_templates/"
+	exceptionsRelativePath string = "./gitlab/recurring_issue_exceptions.yml"
+	exceptions             issueExceptions
 )
 
 type metadata struct {
 	Title            string   `yaml:"title"`
+	Id               string   `yaml:"id"`
 	Description      string   `fm:"content" yaml:"-"`
 	Confidential     bool     `yaml:"confidential"`
 	Assignees        []string `yaml:"assignees,flow"`
@@ -36,6 +44,34 @@ type metadata struct {
 	Crontab          string   `yaml:"crontab"`
 	WeeklyRecurrence int      `yaml:"weeklyRecurrence"`
 	NextTime         time.Time
+}
+
+type issueExceptions struct {
+	Definitions []exceptionDefinition `yaml:"definitions"`
+	Issues      []exceptionRule       `yaml:"rules"`
+}
+
+type exceptionDefinition struct {
+	Id    string `yaml:"id"`
+	Start string `yaml:"start"`
+	End   string `yaml:"end"`
+}
+
+type exceptionRule struct {
+	Issue      string   `yaml:"issue"`
+	Exceptions []string `yaml:"exceptions"`
+}
+
+func parseExceptions() (issueExceptions, error) {
+	source, err := ioutil.ReadFile(exceptionsRelativePath)
+	if err != nil {
+		return exceptions, err
+	}
+	err = yaml.Unmarshal(source, &exceptions)
+	if err != nil {
+		return exceptions, err
+	}
+	return exceptions, nil
 }
 
 func areDatesEqual(aTime time.Time, anotherTime time.Time) bool {
@@ -142,6 +178,12 @@ func getStartOfWeek(thisTime time.Time) time.Time {
 	return thisDay.AddDate(0, 0, -thisWeekday)
 }
 
+func recurranceExceptionPresent(nextTime time.Time, issueId string) bool {
+	// TODO: implement exceptions; handle no ID (skip)
+	// TODO: Describe in README
+	return false
+}
+
 func getNextExecutionTime(lastTime time.Time, cronExpression *cronexpr.Expression, data *metadata) (time.Time, error) {
 	nextTime := cronExpression.Next(lastTime)
 	if data.WeeklyRecurrence > 1 {
@@ -168,6 +210,16 @@ func getNextExecutionTime(lastTime time.Time, cronExpression *cronexpr.Expressio
 		nextIssueWeek := lastIssueWeek.AddDate(0, 0, 7*data.WeeklyRecurrence)
 		daysToAdd := math.Round(nextIssueWeek.Sub(currentWeek).Hours() / 24)
 		nextTime = nextTime.AddDate(0, 0, int(daysToAdd))
+	}
+	for {
+		if recurranceExceptionPresent(nextTime, data.Id) {
+			nextTime, err := getNextExecutionTime(nextTime, cronExpression, data)
+			if err != nil {
+				return nextTime, err
+			}
+		} else {
+			break
+		}
 	}
 	return nextTime, nil
 }
@@ -357,6 +409,11 @@ func main() {
 	}
 
 	log.Println("Last run:", lastRunTime.Format(time.RFC3339))
+
+	_, err = parseExceptions()
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	log.Println("Creating recurring issues")
 
