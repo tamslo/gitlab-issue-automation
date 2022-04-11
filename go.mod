@@ -1,4 +1,4 @@
-module github.com/tamslo/gitlab-issue-automation
+module gitlab-issue-automation
 
 go 1.14
 
