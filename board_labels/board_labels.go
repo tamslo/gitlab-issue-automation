@@ -1,21 +1,21 @@
 package thisWeekLabel
 
 import (
+	dateUtils "gitlab-issue-automation/date_utils"
+	gitlabUtils "gitlab-issue-automation/gitlab_utils"
 	"log"
 	"time"
 
 	"github.com/xanzy/go-gitlab"
 )
 
-func adaptLabels() error {
-	git, err := getGitClient()
-	if err != nil {
-		return err
-	}
-	project, err := getGitProject(git)
-	if err != nil {
-		return err
-	}
+const ThisWeekLabel = "🗓 This week"
+
+var OtherLabels = [...]string{"🏢 In office", "🏃‍♀️ In progress", "⏳ Waiting"}
+
+func AdaptLabels() {
+	git := gitlabUtils.GetGitClient()
+	project := gitlabUtils.GetGitProject()
 	issueState := "opened"
 	orderBy := "due_date"
 	sortOrder := "asc"
@@ -39,7 +39,7 @@ func adaptLabels() error {
 		}
 		pageIssues, _, err := git.Issues.ListProjectIssues(project.ID, options)
 		if err != nil {
-			return err
+			log.Fatal(err)
 		}
 		issues = append(issues, pageIssues...)
 		if len(pageIssues) < perPage {
@@ -48,20 +48,18 @@ func adaptLabels() error {
 			page++
 		}
 	}
-	thisWeekLabel := "🗓 This week"
-	otherLabels := []string{"🏢 In office", "🏃‍♀️ In progress", "⏳ Waiting"}
 	for _, issue := range issues {
 		if issue.DueDate == nil {
 			continue
 		}
-		issueDueTime, err := time.Parse(shortISODateLayout, issue.DueDate.String())
+		issueDueTime, err := time.Parse(dateUtils.ShortISODateLayout, issue.DueDate.String())
 		if err != nil {
-			return err
+			log.Fatal(err)
 		}
-		issueDueWeekStart := getStartOfWeek(issueDueTime)
-		currentWeekStart := getStartOfWeek(time.Now())
+		issueDueWeekStart := dateUtils.GetStartOfWeek(issueDueTime)
+		currentWeekStart := dateUtils.GetStartOfWeek(time.Now())
 		issueDueThisWeek := issueDueWeekStart.Before(currentWeekStart) ||
-			areDatesEqual(issueDueWeekStart, currentWeekStart)
+			dateUtils.AreDatesEqual(issueDueWeekStart, currentWeekStart)
 		if !issueDueThisWeek {
 			break
 		}
@@ -71,10 +69,10 @@ func adaptLabels() error {
 			if issueHasNextWeekLabel || issueHasOtherLabel {
 				break
 			}
-			if label == thisWeekLabel {
+			if label == ThisWeekLabel {
 				issueHasNextWeekLabel = true
 			}
-			for _, otherLabel := range otherLabels {
+			for _, otherLabel := range OtherLabels {
 				if label == otherLabel {
 					issueHasOtherLabel = true
 					break
@@ -85,15 +83,14 @@ func adaptLabels() error {
 		if issueNeedsThisWeekLabel {
 			issueName := "'" + issue.Title + "'"
 			log.Println("Moving issue", issueName, "to this week")
-			updatedLabels := append(issue.Labels, thisWeekLabel)
+			updatedLabels := append(issue.Labels, ThisWeekLabel)
 			options := &gitlab.UpdateIssueOptions{
 				Labels: &updatedLabels,
 			}
 			_, _, err := git.Issues.UpdateIssue(project.ID, issue.IID, options)
 			if err != nil {
-				return err
+				log.Fatal(err)
 			}
 		}
 	}
-	return err
 }

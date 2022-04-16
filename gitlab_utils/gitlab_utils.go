@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"path"
 	"strings"
 	"time"
 
@@ -76,7 +77,11 @@ func GetGitProject() *gitlab.Project {
 	return project
 }
 
-func GetLastRunTime() (time.Time, error) {
+func GetRecurringIssuesPath() string {
+	return path.Join(GetCiProjectDir(), ".gitlab/recurring_issue_templates/")
+}
+
+func GetLastRunTime() time.Time {
 	git := GetGitClient()
 	lastRunTime := time.Unix(0, 0)
 	options := &gitlab.ListProjectPipelinesOptions{
@@ -88,25 +93,24 @@ func GetLastRunTime() (time.Time, error) {
 	ciJobName := GetCiJobName()
 	pipelineInfos, _, err := git.Pipelines.ListProjectPipelines(ciProjectID, options)
 	if err != nil {
-		return lastRunTime, err
+		log.Fatal(err)
 	}
 	for _, pipelineInfo := range pipelineInfos {
 		jobs, _, err := git.Jobs.ListPipelineJobs(ciProjectID, pipelineInfo.ID, nil)
 		if err != nil {
-			return lastRunTime, err
+			log.Fatal(err)
 		}
 		for _, job := range jobs {
 			if job.Name == ciJobName {
 				lastRunTime = *job.FinishedAt
-				return lastRunTime, nil
+				return lastRunTime
 			}
 		}
 	}
-
-	return lastRunTime, nil
+	return lastRunTime
 }
 
-func createIssue(data *types.Metadata) error {
+func CreateIssue(data *types.Metadata) error {
 	git := GetGitClient()
 	project := GetGitProject()
 	options := &gitlab.CreateIssueOptions{

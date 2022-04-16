@@ -1,6 +1,7 @@
-package main
+package recurringIssues
 
 import (
+	types "gitlab-issue-automation/types"
 	"reflect"
 	"testing"
 )
@@ -12,7 +13,7 @@ func Test_parseMetadata(t *testing.T) {
 	tests := []struct {
 		name    string
 		args    args
-		want    *metadata
+		want    *types.Metadata
 		wantErr bool
 	}{
 		{
@@ -21,7 +22,7 @@ func Test_parseMetadata(t *testing.T) {
 title: Test Title
 ---
 `)},
-			want: &metadata{
+			want: &types.Metadata{
 				Title: "Test Title",
 			},
 		},
@@ -31,7 +32,7 @@ title: Test Title
 test: test
 ---
 Test Description`)},
-			want: &metadata{
+			want: &types.Metadata{
 				Description: "Test Description",
 			},
 		},
@@ -41,7 +42,7 @@ Test Description`)},
 confidential: true
 ---
 `)},
-			want: &metadata{
+			want: &types.Metadata{
 				Confidential: true,
 			},
 		},
@@ -51,7 +52,7 @@ confidential: true
 assignees: [ "assignee1" ]
 ---
 `)},
-			want: &metadata{
+			want: &types.Metadata{
 				Assignees: []string{"assignee1"},
 			},
 		},
@@ -61,7 +62,7 @@ assignees: [ "assignee1" ]
 assignees: [ "assignee1", "assignee2" ]
 ---
 `)},
-			want: &metadata{
+			want: &types.Metadata{
 				Assignees: []string{"assignee1", "assignee2"},
 			},
 		},
@@ -71,7 +72,7 @@ assignees: [ "assignee1", "assignee2" ]
 labels: [ "label1" ]
 ---
 `)},
-			want: &metadata{
+			want: &types.Metadata{
 				Labels: []string{"label1"},
 			},
 		},
@@ -81,7 +82,7 @@ labels: [ "label1" ]
 labels: [ "label1", "label2" ]
 ---
 `)},
-			want: &metadata{
+			want: &types.Metadata{
 				Labels: []string{"label1", "label2"},
 			},
 		},
@@ -91,7 +92,7 @@ labels: [ "label1", "label2" ]
 duein: 24h
 ---
 `)},
-			want: &metadata{
+			want: &types.Metadata{
 				DueIn: "24h",
 			},
 		},

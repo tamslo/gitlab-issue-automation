@@ -1,22 +1,20 @@
 package weeklyRecurrance
 
 import (
+	dateUtils "gitlab-issue-automation/date_utils"
+	gitlabUtils "gitlab-issue-automation/gitlab_utils"
+	types "gitlab-issue-automation/types"
+	"log"
 	"math"
 	"time"
 
 	"github.com/xanzy/go-gitlab"
 )
 
-func checkWeeklyRecurrance(nextTime time.Time, data *types.metadata) time.Time {
+func GetNext(nextTime time.Time, data *types.Metadata) time.Time {
 	if data.WeeklyRecurrence > 1 {
-		git, err := getGitClient()
-		if err != nil {
-			return nextTime, err
-		}
-		project, err := getGitProject(git)
-		if err != nil {
-			return nextTime, err
-		}
+		git := gitlabUtils.GetGitClient()
+		project := gitlabUtils.GetGitProject()
 		orderBy := "created_at"
 		options := &gitlab.ListProjectIssuesOptions{
 			Search:  &data.Title,
@@ -24,13 +22,14 @@ func checkWeeklyRecurrance(nextTime time.Time, data *types.metadata) time.Time {
 		}
 		issues, _, err := git.Issues.ListProjectIssues(project.ID, options)
 		if err != nil {
-			return nextTime, err
+			log.Fatal(err)
 		}
 		lastIssueDate := *issues[0].CreatedAt
-		lastIssueWeek := getStartOfWeek(lastIssueDate)
-		currentWeek := getStartOfWeek(time.Now())
+		lastIssueWeek := dateUtils.GetStartOfWeek(lastIssueDate)
+		currentWeek := dateUtils.GetStartOfWeek(time.Now())
 		nextIssueWeek := lastIssueWeek.AddDate(0, 0, 7*data.WeeklyRecurrence)
 		daysToAdd := math.Round(nextIssueWeek.Sub(currentWeek).Hours() / 24)
 		nextTime = nextTime.AddDate(0, 0, int(daysToAdd))
 	}
+	return nextTime
 }

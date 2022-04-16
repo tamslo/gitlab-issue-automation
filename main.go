@@ -1,33 +1,21 @@
 package main
 
 import (
+	boardLabels "gitlab-issue-automation/board_labels"
 	gitlabUtils "gitlab-issue-automation/gitlab_utils"
+	recurringIssues "gitlab-issue-automation/recurring_issues"
 	"log"
-	"path/filepath"
 	"time"
 )
 
 // TODO: Test biweekly occurance, adding labels, handling exceptions
 
 func main() {
-	lastRunTime, err := gitlabUtils.GetLastRunTime()
-	if err != nil {
-		log.Fatal(err)
-	}
+	lastRunTime := gitlabUtils.GetLastRunTime()
 	log.Println("Last run:", lastRunTime.Format(time.RFC3339))
-
 	log.Println("Creating recurring issues")
-	err = filepath.Walk(recurringIssues.getRecurringIssuesPath(), recurringIssues.processIssueFile(lastRunTime))
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	log.Println("Adapting labels")
-
-	err = adaptLabels()
-	if err != nil {
-		log.Fatal(err)
-	}
-
+	recurringIssues.ProcessIssueFiles(lastRunTime)
+	log.Println("Adapting board labels")
+	boardLabels.AdaptLabels()
 	log.Println("Run complete")
 }
