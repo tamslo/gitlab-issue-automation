@@ -30,7 +30,7 @@ func WriteNotes(lastTime time.Time) {
 	if standupIssue.NextTime.Before(time.Now()) || true {
 		issueDue := gitlabUtils.GetIssueDueDate(standupIssue)
 		issueDateString := issueDue.Format(dateUtils.ShortISODateLayout)
-		issueDateString := strings.ReplaceAll(issueDateString, "-", "–")
+		issueDateString = strings.ReplaceAll(issueDateString, "-", "–")
 		title := StandupTitlePrefix + issueDateString
 		if !gitlabUtils.WikiPageExists(title) {
 			// Collect relevant issues
