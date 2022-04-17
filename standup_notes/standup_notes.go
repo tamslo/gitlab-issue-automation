@@ -22,7 +22,8 @@ func WriteNotes(lastTime time.Time) {
 	if !standupIssueExists {
 		return
 	}
-	standupIssue, err := recurringIssues.GetRecurringIssue(standupIssuePath, lastTime)
+	verbose := false
+	standupIssue, err := recurringIssues.GetRecurringIssue(standupIssuePath, lastTime, verbose)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -32,7 +33,6 @@ func WriteNotes(lastTime time.Time) {
 		issueDateString := issueDue.Format(dateUtils.ShortISODateLayout)
 		issueDateString = strings.ReplaceAll(issueDateString, "-", "–")
 		title := StandupTitlePrefix + issueDateString
-		log.Println("Page", title, "exists:", gitlabUtils.WikiPageExists(title))
 		// if !gitlabUtils.WikiPageExists(title) {
 		if !gitlabUtils.WikiPageExists(title) || true {
 			orderBy := "updated_at"

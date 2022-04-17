@@ -39,14 +39,14 @@ func parseMetadata(contents []byte) (*types.Metadata, error) {
 	return data, nil
 }
 
-func getNextExecutionTime(lastTime time.Time, data *types.Metadata) time.Time {
+func getNextExecutionTime(lastTime time.Time, data *types.Metadata, verbose bool) time.Time {
 	nextTime := data.CronExpression.Next(lastTime)
-	nextTime = nWeeklyRecurrance.GetNext(nextTime, data)
-	nextTime = recurranceExceptions.GetNext(nextTime, data)
+	nextTime = nWeeklyRecurrance.GetNext(nextTime, data, verbose)
+	nextTime = recurranceExceptions.GetNext(nextTime, data, verbose)
 	return nextTime
 }
 
-func GetRecurringIssue(path string, lastTime time.Time) (*types.Metadata, error) {
+func GetRecurringIssue(path string, lastTime time.Time, verbose bool) (*types.Metadata, error) {
 	recurringIssue := new(types.Metadata)
 	contents, err := ioutil.ReadFile(path)
 	if err != nil {
@@ -61,7 +61,7 @@ func GetRecurringIssue(path string, lastTime time.Time) (*types.Metadata, error)
 		return recurringIssue, err
 	}
 	recurringIssue.CronExpression = *cronExpression
-	recurringIssue.NextTime = getNextExecutionTime(lastTime, recurringIssue)
+	recurringIssue.NextTime = getNextExecutionTime(lastTime, recurringIssue, verbose)
 	return recurringIssue, nil
 }
 
@@ -73,7 +73,8 @@ func processIssueFile(lastTime time.Time) filepath.WalkFunc {
 		if filepath.Ext(path) != ".md" {
 			return nil
 		}
-		data, err := GetRecurringIssue(path, lastTime)
+		verbose := true
+		data, err := GetRecurringIssue(path, lastTime, verbose)
 		if data.NextTime.Before(time.Now()) {
 			log.Println(path, "was due", data.NextTime.Format(time.RFC3339), "- creating new issue")
 

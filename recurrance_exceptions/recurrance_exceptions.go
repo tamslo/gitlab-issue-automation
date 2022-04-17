@@ -16,7 +16,7 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-func GetNext(nextTime time.Time, data *types.Metadata) time.Time {
+func GetNext(nextTime time.Time, data *types.Metadata, verbose bool) time.Time {
 	if data.Id != "" && exceptionsExist() {
 		exceptions := parseExceptions()
 		matchingExceptions := getExceptionIdsForIssue(exceptions, data.Id)
@@ -32,7 +32,9 @@ func GetNext(nextTime time.Time, data *types.Metadata) time.Time {
 			}
 			exceptionApplies := (startTime.Before(nextTime) || dateUtils.AreDatesEqual(startTime, nextTime)) && (endTime.After(nextTime) || dateUtils.AreDatesEqual(endTime, nextTime))
 			if exceptionApplies {
-				log.Println("Applying exception", exceptionDefinition.Id, "for", data.Id, "from", exceptionDefinition.Start, "to", exceptionDefinition.End)
+				if verbose {
+					log.Println("Applying exception", exceptionDefinition.Id, "for", data.Id, "from", exceptionDefinition.Start, "to", exceptionDefinition.End)
+				}
 				nextTime = data.CronExpression.Next(endTime)
 				if dateUtils.AreDatesEqual(endTime, nextTime) {
 					nextTime = data.CronExpression.Next(endTime.AddDate(0, 0, 1))
