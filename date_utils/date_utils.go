@@ -6,8 +6,6 @@ const ShortISODateLayout = "2006-01-02"
 
 const YearDateLayout = "2006"
 
-const PrettyDateLayout = "02 Jan 2006"
-
 func GetStartOfWeek(thisTime time.Time) time.Time {
 	thisWeekday := int(thisTime.Weekday())
 	thisDay := time.Date(thisTime.Year(), thisTime.Month(), thisTime.Day(), 0, 0, 0, 0, thisTime.Location())

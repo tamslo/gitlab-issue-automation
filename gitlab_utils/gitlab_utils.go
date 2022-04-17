@@ -4,6 +4,7 @@ import (
 	"crypto/tls"
 	"log"
 	"net/http"
+	"net/url"
 	"os"
 	"path"
 	"strings"
@@ -183,6 +184,13 @@ func UpdateIssue(issueId int, options *gitlab.UpdateIssueOptions) *gitlab.Issue 
 		log.Fatal(err)
 	}
 	return updatedIssue
+}
+
+func WikiPageExists(title string) bool {
+	git := GetGitClient()
+	project := GetGitProject()
+	_, _, err := git.Wikis.GetWikiPage(project.ID, url.QueryEscape(title))
+	return err == nil
 }
 
 func CreateWikiPage(title string, content string) {
