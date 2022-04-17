@@ -25,5 +25,3 @@ jobs:
       with:
         push: true
         tags: tamslo/gitlab-issue-automation
-        secrets: |
-            GIT_AUTH_TOKEN=${{ secrets.DOCKER_HUB_AUTH }}
