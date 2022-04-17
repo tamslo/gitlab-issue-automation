@@ -180,3 +180,14 @@ func UpdateIssue(issueId int, options *gitlab.UpdateIssueOptions) *gitlab.Issue 
 	}
 	return updatedIssue
 }
+
+func CreateWikiPage(title string, content string) {
+	format := "markdown"
+	options := gitlab.CreateWikiPageOptions{
+		Content: &content,
+		Title:   &title,
+		Format:  &format,
+	}
+	wikisService := gitlab.WikisService{}
+	wikisService.CreateWikiPage(GetCiProjectId(), &options)
+}

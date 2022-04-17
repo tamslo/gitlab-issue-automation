@@ -7,8 +7,6 @@ import (
 	"os"
 	"path/filepath"
 	"time"
-
-	"github.com/xanzy/go-gitlab"
 )
 
 // tableColumns := []string{":rainbow: Project", ":back: What I did", ":soon: What I will do", ":warning:️ Problems", ":pencil: Notes" }
@@ -24,11 +22,12 @@ func WriteNotes(lastTime time.Time) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	if standupIssue.NextTime.Before(time.Now()) {
+	// if standupIssue.NextTime.Before(time.Now()) {
+	if standupIssue.NextTime.Before(time.Now()) || true {
 		log.Println("TODO: Create standup notes")
 		// Create Wiki page
 		// Collect relevant issues
 		// TODO: What happens if wiki page with same name exists
-		gitlab.WikisService
+		gitlabUtils.CreateWikiPage("Test", "*This is a **test**.*")
 	}
 }
