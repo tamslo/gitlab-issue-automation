@@ -47,26 +47,30 @@ Finally, create a new schedule under the project CI/CD options, ensuring that th
 
 ### Adding Recurrance Exceptions
 
-To add exceptions to recurrances, create a file named `recurrance_exceptions.yml` in the templates folder.
+To add exceptions to recurrances, create a file named `recurrance_exceptions.yml` in the templates folder. Note that exception dates are applied to the creation date given in `crontab`, not the due date.
 
 It can contain exception definitions and rules that map issues by their IDs (need to be given in the issue template) to exception definitions.
 
-Start and end dates are given in the format `YYYY-MM-DD`. If an exception occurs every year, the placeholder `YEAR` can be given.
+Start and end dates are given in the format `YYYY-MM-DD`. If an exception occurs every year, the placeholder `YEAR` can be given (needs to be set for both `start` and `end`). 
 
 ```
 definitions:
-  - :
+  -
     id: "christmas-break"
     start: "YEAR-12-24"
     end: "YEAR-01-01"
-  - :
+  -
     id: "vacation"
     start: "2022-05-13"
     end: "2022-05-20"
+  -
+    id: "no-meeting"
+    start: "2022-04-20"
+    end: "2022-04-20"
 rules:
-  - :
+  -
     issue: "weekly-meeting"
-    exceptions: ["christmas-break", "vacation"]
+    exceptions: ["christmas-break", "vacation", "no-meeting"]
 ```
 
 ### Automatically Setting Label for This Week

@@ -35,6 +35,9 @@ func GetNext(nextTime time.Time, data *types.Metadata, cronExpression *cronexpr.
 			if exceptionApplies {
 				log.Println("Applying exception", exceptionDefinition.Id, "for", data.Id, "from", exceptionDefinition.Start, "to", exceptionDefinition.End)
 				nextTime = cronExpression.Next(endTime)
+				if dateUtils.AreDatesEqual(endTime, nextTime) {
+					nextTime = cronExpression.Next(endTime.AddDate(0, 0, 1))
+				}
 				break
 			}
 		}
@@ -64,38 +67,36 @@ func getExceptionDefinition(exceptionDefinitions []types.ExceptionDefinition, ex
 	if !definitionFound {
 		log.Fatal(errors.New(fmt.Sprintf("Unknown exception definition %s", exceptionId)))
 	}
-	return exceptionDefinition
+	return fillInYearPlaceholdes(exceptionDefinition)
 }
 
-func fillInYearPlaceholdes(exceptions types.RecurranceExceptions) types.RecurranceExceptions {
+func fillInYearPlaceholdes(exceptionDefinition types.ExceptionDefinition) types.ExceptionDefinition {
 	const YearPlaceholder = "YEAR"
-	for _, exceptionDefinition := range exceptions.Definitions {
-		if (strings.Contains(exceptionDefinition.Start, YearPlaceholder) &&
-			!strings.Contains(exceptionDefinition.End, YearPlaceholder)) ||
-			(!strings.Contains(exceptionDefinition.Start, YearPlaceholder) &&
-				strings.Contains(exceptionDefinition.End, YearPlaceholder)) {
-			log.Fatal(errors.New("Please use the YEAR place holder always for both dates in the exception definition"))
+	if (strings.Contains(exceptionDefinition.Start, YearPlaceholder) &&
+		!strings.Contains(exceptionDefinition.End, YearPlaceholder)) ||
+		(!strings.Contains(exceptionDefinition.Start, YearPlaceholder) &&
+			strings.Contains(exceptionDefinition.End, YearPlaceholder)) {
+		log.Fatal(errors.New("Please use the YEAR place holder always for both dates in the exception definition"))
+	}
+	if strings.Contains(exceptionDefinition.Start, YearPlaceholder) &&
+		strings.Contains(exceptionDefinition.End, YearPlaceholder) {
+		currentYear := time.Now().Format(dateUtils.YearDateLayout)
+		exceptionDefinition.Start = strings.ReplaceAll(exceptionDefinition.Start, YearPlaceholder, currentYear)
+		exceptionDefinition.End = strings.ReplaceAll(exceptionDefinition.End, YearPlaceholder, currentYear)
+		startTime, err := time.Parse(dateUtils.ShortISODateLayout, exceptionDefinition.Start)
+		if err != nil {
+			log.Fatal(err)
 		}
-		if strings.Contains(exceptionDefinition.Start, YearPlaceholder) &&
-			strings.Contains(exceptionDefinition.End, YearPlaceholder) {
-			currentYear := time.Now().Format(dateUtils.YearDateLayout)
-			exceptionDefinition.Start = strings.ReplaceAll(exceptionDefinition.Start, YearPlaceholder, currentYear)
-			exceptionDefinition.End = strings.ReplaceAll(exceptionDefinition.End, YearPlaceholder, currentYear)
-			startTime, err := time.Parse(dateUtils.ShortISODateLayout, exceptionDefinition.Start)
-			if err != nil {
-				log.Fatal(err)
-			}
-			endTime, err := time.Parse(dateUtils.ShortISODateLayout, exceptionDefinition.End)
-			if err != nil {
-				log.Fatal(err)
-			}
-			if startTime.Month() > endTime.Month() {
-				nextYear := time.Now().AddDate(1, 0, 0).Format(dateUtils.YearDateLayout)
-				exceptionDefinition.End = strings.ReplaceAll(exceptionDefinition.End, currentYear, nextYear)
-			}
+		endTime, err := time.Parse(dateUtils.ShortISODateLayout, exceptionDefinition.End)
+		if err != nil {
+			log.Fatal(err)
+		}
+		if startTime.Month() > endTime.Month() {
+			nextYear := time.Now().AddDate(1, 0, 0).Format(dateUtils.YearDateLayout)
+			exceptionDefinition.End = strings.ReplaceAll(exceptionDefinition.End, currentYear, nextYear)
 		}
 	}
-	return exceptions
+	return exceptionDefinition
 }
 
 func parseExceptions() types.RecurranceExceptions {
@@ -109,7 +110,7 @@ func parseExceptions() types.RecurranceExceptions {
 	if err != nil {
 		log.Fatal(err)
 	}
-	return fillInYearPlaceholdes(exceptions)
+	return exceptions
 }
 
 func exceptionsExist() bool {

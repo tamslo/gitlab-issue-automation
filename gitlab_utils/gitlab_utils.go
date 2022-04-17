@@ -33,7 +33,7 @@ func GetEnvVariable(parameters *envVariableParameters) string {
 
 func GetGitlabAPIToken() string {
 	return GetEnvVariable(&envVariableParameters{
-		Name:                  "CI_PROJECT_ID",
+		Name:                  "GITLAB_API_TOKEN",
 		ErrorMessageOverwrite: "Ensure this is set under the project CI/CD settings.",
 	})
 }
