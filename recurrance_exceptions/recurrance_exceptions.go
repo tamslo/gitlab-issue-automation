@@ -13,11 +13,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/gorhill/cronexpr"
 	"gopkg.in/yaml.v2"
 )
 
-func GetNext(nextTime time.Time, data *types.Metadata, cronExpression *cronexpr.Expression) time.Time {
+func GetNext(nextTime time.Time, data *types.Metadata) time.Time {
 	if data.Id != "" && exceptionsExist() {
 		exceptions := parseExceptions()
 		matchingExceptions := getExceptionIdsForIssue(exceptions, data.Id)
@@ -34,9 +33,9 @@ func GetNext(nextTime time.Time, data *types.Metadata, cronExpression *cronexpr.
 			exceptionApplies := (startTime.Before(nextTime) || dateUtils.AreDatesEqual(startTime, nextTime)) && (endTime.After(nextTime) || dateUtils.AreDatesEqual(endTime, nextTime))
 			if exceptionApplies {
 				log.Println("Applying exception", exceptionDefinition.Id, "for", data.Id, "from", exceptionDefinition.Start, "to", exceptionDefinition.End)
-				nextTime = cronExpression.Next(endTime)
+				nextTime = data.CronExpression.Next(endTime)
 				if dateUtils.AreDatesEqual(endTime, nextTime) {
-					nextTime = cronExpression.Next(endTime.AddDate(0, 0, 1))
+					nextTime = data.CronExpression.Next(endTime.AddDate(0, 0, 1))
 				}
 				break
 			}

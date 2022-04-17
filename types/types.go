@@ -1,6 +1,10 @@
 package issueTypes
 
-import "time"
+import (
+	"time"
+
+	"github.com/gorhill/cronexpr"
+)
 
 type Metadata struct {
 	Title            string   `yaml:"title"`
@@ -13,6 +17,7 @@ type Metadata struct {
 	Crontab          string   `yaml:"crontab"`
 	WeeklyRecurrence int      `yaml:"weeklyRecurrence"`
 	NextTime         time.Time
+	CronExpression   cronexpr.Expression
 }
 
 type RecurranceExceptions struct {
