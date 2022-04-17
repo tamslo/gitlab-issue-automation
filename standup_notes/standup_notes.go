@@ -32,15 +32,22 @@ func WriteNotes(lastTime time.Time) {
 		issueDateString := issueDue.Format(dateUtils.ShortISODateLayout)
 		issueDateString = strings.ReplaceAll(issueDateString, "-", "–")
 		title := StandupTitlePrefix + issueDateString
-		if !gitlabUtils.WikiPageExists(title) {
+		log.Println("Page", title, "exists:", gitlabUtils.WikiPageExists(title))
+		// if !gitlabUtils.WikiPageExists(title) {
+		if !gitlabUtils.WikiPageExists(title) || true {
 			orderBy := "updated_at"
 			sortOrder := "asc"
-			issues := gitlabUtils.GetSortedProjectIssues(orderBy, sortOrder)
-			for _, issue := range issues {
+			openIssues := gitlabUtils.GetSortedProjectIssues(orderBy, sortOrder, "opened")
+			closedIssues := gitlabUtils.GetSortedProjectIssues(orderBy, sortOrder, "closed")
+			for _, issue := range openIssues {
 				log.Println(issue.UpdatedAt)
 			}
-			log.Println("Creating new wiki page", title)
-			gitlabUtils.CreateWikiPage(title, "*This is YET another **test**.*")
+			for _, issue := range closedIssues {
+				log.Println(issue.UpdatedAt)
+			}
+			content := "*This is YET another **test**.*"
+			log.Println("Would create new wiki page", title, "with content", content)
+			// gitlabUtils.CreateWikiPage(title, content)
 		}
 	}
 }

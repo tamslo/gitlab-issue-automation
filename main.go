@@ -14,11 +14,11 @@ import (
 func main() {
 	lastRunTime := gitlabUtils.GetLastRunTime()
 	log.Println("Last run:", lastRunTime.Format(time.RFC3339))
-	log.Println("Creating recurring issues")
+	log.Println("Checking whether to create recurring issues")
 	recurringIssues.ProcessIssueFiles(lastRunTime)
-	log.Println("Adapting board labels")
+	log.Println("Checking whether to adapt board labels")
 	boardLabels.AdaptLabels()
-	log.Println("Creating standup notes")
+	log.Println("Checking whether to create standup notes")
 	standupNotes.WriteNotes(lastRunTime)
 	log.Println("Run complete")
 }

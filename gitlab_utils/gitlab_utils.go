@@ -4,7 +4,6 @@ import (
 	"crypto/tls"
 	"log"
 	"net/http"
-	"net/url"
 	"os"
 	"path"
 	"strings"
@@ -111,10 +110,9 @@ func GetLastRunTime() time.Time {
 	return lastRunTime
 }
 
-func GetSortedProjectIssues(orderBy string, sortOrder string) []*gitlab.Issue {
+func GetSortedProjectIssues(orderBy string, sortOrder string, issueState string) []*gitlab.Issue {
 	git := GetGitClient()
 	project := GetGitProject()
-	issueState := "opened"
 	perPage := 20
 	page := 1
 	lastPageReached := false
@@ -189,7 +187,7 @@ func UpdateIssue(issueId int, options *gitlab.UpdateIssueOptions) *gitlab.Issue 
 func WikiPageExists(title string) bool {
 	git := GetGitClient()
 	project := GetGitProject()
-	_, _, err := git.Wikis.GetWikiPage(project.ID, url.QueryEscape(title))
+	_, _, err := git.Wikis.GetWikiPage(project.ID, title)
 	return err == nil
 }
 

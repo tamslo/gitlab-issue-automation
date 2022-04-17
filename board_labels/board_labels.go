@@ -68,7 +68,8 @@ func adaptLabel(issue *gitlab.Issue, label string, updatedLabels *gitlab.Labels,
 func AdaptLabels() {
 	orderBy := "due_date"
 	sortOrder := "asc"
-	issues := gitlabUtils.GetSortedProjectIssues(orderBy, sortOrder)
+	issueState := "opened"
+	issues := gitlabUtils.GetSortedProjectIssues(orderBy, sortOrder, issueState)
 	for _, issue := range issues {
 		if issue.DueDate == nil {
 			continue
