@@ -1,0 +1,23 @@
+name: Docker Image CI
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    -
+      name: Build and push
+      uses: docker/build-push-action@v2
+      with:
+        push: true
+        tags: tamslo/gitlab-issue-automation
+        secrets: |
+            GIT_AUTH_TOKEN=${{ secrets.DOCKER_HUB_AUTH }}
