@@ -6,6 +6,8 @@ Forked from ⭐ [ph1ll/gitlab-recurring-issues](https://github.com/ph1ll/gitlab-
 
 The Docker image is available on [DockerHub](https://hub.docker.com/repository/docker/tamslo/gitlab-issue-automation).
 
+_⚠️ Please note that I did not add any unit testing; so use with caution – especially added features like n-weekly occurrence, exceptions, adapting board labels, and creating standup meeting notes._
+
 ## Usage
 
 Create template issues in the `.gitlab/recurring_issue_templates/` directory as Markdown files. Template issues use YAML front matter for configuration settings. The template body is used as the issue description.
@@ -78,3 +80,7 @@ rules:
 The script also checks whether labels for custom issue management on a board view exist (see `adaptaLabels`).
 
 If an issue is due, the `TodayLabel` or `ThisWeekLabel` will be added if it is not present and no `OtherLabels` exist that indicate that the issue is in progress. If the `TodayLabel` is added and the `ThisWeekLabel` present, the latter will be removed.
+
+### Add Standup Notes
+
+A helper will create standup meeting notes on the day of the `prepare-standup` recurring issue, if the issue exists and no notes exist yet. All issues that were updated between the last standup meeting note and the current one will be included as a list to help filling out the table (included as template).

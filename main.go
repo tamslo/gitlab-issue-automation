@@ -9,8 +9,6 @@ import (
 	"time"
 )
 
-// TODO: Test biweekly occurance, adding labels, handling exceptions
-
 func main() {
 	lastRunTime := gitlabUtils.GetLastRunTime()
 	log.Println("Last run:", lastRunTime.Format(time.RFC3339))
