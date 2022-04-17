@@ -1,4 +1,4 @@
-package thisWeekLabel
+package boardLabels
 
 import (
 	dateUtils "gitlab-issue-automation/date_utils"

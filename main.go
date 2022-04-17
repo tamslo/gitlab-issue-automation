@@ -4,6 +4,7 @@ import (
 	boardLabels "gitlab-issue-automation/board_labels"
 	gitlabUtils "gitlab-issue-automation/gitlab_utils"
 	recurringIssues "gitlab-issue-automation/recurring_issues"
+	standupNotes "gitlab-issue-automation/standup_notes"
 	"log"
 	"time"
 )
@@ -17,5 +18,7 @@ func main() {
 	recurringIssues.ProcessIssueFiles(lastRunTime)
 	log.Println("Adapting board labels")
 	boardLabels.AdaptLabels()
+	log.Println("Creating standup notes")
+	standupNotes.WriteNotes(lastRunTime)
 	log.Println("Run complete")
 }
