@@ -146,6 +146,14 @@ func GetSortedProjectIssues(orderBy string, sortOrder string) []*gitlab.Issue {
 	return issues
 }
 
+func GetIssueDueDate(data *types.Metadata) time.Time {
+	duration, err := time.ParseDuration(data.DueIn)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return data.NextTime.Add(duration)
+}
+
 func CreateIssue(data *types.Metadata) error {
 	git := GetGitClient()
 	project := GetGitProject()
@@ -157,11 +165,7 @@ func CreateIssue(data *types.Metadata) error {
 		Labels:       &gitlab.Labels{strings.Join(data.Labels, ",")},
 	}
 	if data.DueIn != "" {
-		duration, err := time.ParseDuration(data.DueIn)
-		if err != nil {
-			return err
-		}
-		dueDate := gitlab.ISOTime(data.NextTime.Add(duration))
+		dueDate := gitlab.ISOTime(GetIssueDueDate(data))
 		options.DueDate = &dueDate
 	}
 	_, _, err := git.Issues.CreateIssue(project.ID, options)

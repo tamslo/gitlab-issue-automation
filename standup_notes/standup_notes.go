@@ -25,9 +25,11 @@ func WriteNotes(lastTime time.Time) {
 	// if standupIssue.NextTime.Before(time.Now()) {
 	if standupIssue.NextTime.Before(time.Now()) || true {
 		log.Println("TODO: Create standup notes")
+		//issueDue := gitlabUtils.GetIssueDueDate(standupIssue)
+		//title := issueDue.Format(dateUtils.PrettyDateLayout)
 		// Create Wiki page
 		// Collect relevant issues
 		// TODO: What happens if wiki page with same name exists
-		gitlabUtils.CreateWikiPage("Test", "*This is a **test**.*")
+		gitlabUtils.CreateWikiPage("Test", "*This is another **test**.*")
 	}
 }
