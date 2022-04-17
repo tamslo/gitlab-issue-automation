@@ -1,6 +1,7 @@
 package standupNotes
 
 import (
+	boardLabels "gitlab-issue-automation/board_labels"
 	dateUtils "gitlab-issue-automation/date_utils"
 	gitlabUtils "gitlab-issue-automation/gitlab_utils"
 	recurringIssues "gitlab-issue-automation/recurring_issues"
@@ -82,8 +83,9 @@ func WriteNotes(lastTime time.Time) {
 			content += "## Issues\n"
 			content += "\n"
 			for _, issue := range issues {
-				log.Println(issue.Title)
-				log.Println(issue.UpdatedAt)
+				if boardLabels.HasLabel(issue, boardLabels.TestLabel) {
+					continue
+				}
 				if issue.UpdatedAt.After(lastNoteDate) {
 					content += "* [" + issue.Title + "]"
 					content += "(" + issue.WebURL + ")"
