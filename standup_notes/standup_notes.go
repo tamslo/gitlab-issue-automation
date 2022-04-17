@@ -32,10 +32,11 @@ func WriteNotes(lastTime time.Time) {
 		issueDateString := issueDue.Format(dateUtils.ShortISODateLayout)
 		issueDateString = strings.ReplaceAll(issueDateString, "-", "–")
 		title := StandupTitlePrefix + issueDateString
-		if !gitlabUtils.WikiPageExists(title) {
+		// if !gitlabUtils.WikiPageExists(title) {
+		if !gitlabUtils.WikiPageExists(title) || true {
 			// Collect relevant issues
 			log.Println("Creating new wiki page", title)
-			gitlabUtils.CreateWikiPage(title, "*This is another **test**.*")
+			gitlabUtils.CreateWikiPage(title, "*This is YET another **test**.*")
 		}
 	}
 }
