@@ -110,6 +110,42 @@ func GetLastRunTime() time.Time {
 	return lastRunTime
 }
 
+func GetSortedProjectIssues(orderBy string, sortOrder string) []*gitlab.Issue {
+	git := GetGitClient()
+	project := GetGitProject()
+	issueState := "opened"
+	perPage := 20
+	page := 1
+	lastPageReached := false
+	var issues []*gitlab.Issue
+	for {
+		if lastPageReached {
+			break
+		}
+		listOptions := &gitlab.ListOptions{
+			PerPage: perPage,
+			Page:    page,
+		}
+		options := &gitlab.ListProjectIssuesOptions{
+			State:       &issueState,
+			OrderBy:     &orderBy,
+			Sort:        &sortOrder,
+			ListOptions: *listOptions,
+		}
+		pageIssues, _, err := git.Issues.ListProjectIssues(project.ID, options)
+		if err != nil {
+			log.Fatal(err)
+		}
+		issues = append(issues, pageIssues...)
+		if len(pageIssues) < perPage {
+			lastPageReached = true
+		} else {
+			page++
+		}
+	}
+	return issues
+}
+
 func CreateIssue(data *types.Metadata) error {
 	git := GetGitClient()
 	project := GetGitProject()
@@ -133,4 +169,14 @@ func CreateIssue(data *types.Metadata) error {
 		return err
 	}
 	return nil
+}
+
+func UpdateIssue(issueId int, options *gitlab.UpdateIssueOptions) *gitlab.Issue {
+	git := GetGitClient()
+	project := GetGitProject()
+	updatedIssue, _, err := git.Issues.UpdateIssue(project.ID, issueId, options)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return updatedIssue
 }

@@ -73,8 +73,8 @@ rules:
     exceptions: ["christmas-break", "vacation", "no-meeting"]
 ```
 
-### Automatically Setting Label for This Week
+### Automatically Moving Issues on Board
 
 The script also checks whether labels for custom issue management on a board view exist (see `adaptaLabels`).
 
-If an issue is due this week, the `thisWeekLabel` label will be added if it is not present and no `otherLabels` exist that indicate that the issue is in progress.
+If an issue is due, the `TodayLabel` or `ThisWeekLabel` will be added if it is not present and no `OtherLabels` exist that indicate that the issue is in progress. If the `TodayLabel` is added and the `ThisWeekLabel` present, the latter will be removed.

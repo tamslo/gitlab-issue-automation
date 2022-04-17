@@ -10,44 +10,65 @@ import (
 )
 
 const ThisWeekLabel = "🗓 This week"
+const TodayLabel = "☀️ Today"
 
-var OtherLabels = [...]string{"🏢 In office", "🏃‍♀️ In progress", "⏳ Waiting"}
+var OtherLabels = []string{"🏢 In office", "🏃‍♀️ In progress", "⏳ Waiting"}
 
-func AdaptLabels() {
-	git := gitlabUtils.GetGitClient()
-	project := gitlabUtils.GetGitProject()
-	issueState := "opened"
-	orderBy := "due_date"
-	sortOrder := "asc"
-	perPage := 20
-	page := 1
-	lastPageReached := false
-	var issues []*gitlab.Issue
-	for {
-		if lastPageReached {
+func hasAnyLabel(issue *gitlab.Issue, labels []string) bool {
+	anyLabelPresent := false
+	for _, label := range labels {
+		labelPresent := hasLabel(issue, label)
+		if labelPresent {
+			anyLabelPresent = true
 			break
 		}
-		listOptions := &gitlab.ListOptions{
-			PerPage: perPage,
-			Page:    page,
-		}
-		options := &gitlab.ListProjectIssuesOptions{
-			State:       &issueState,
-			OrderBy:     &orderBy,
-			Sort:        &sortOrder,
-			ListOptions: *listOptions,
-		}
-		pageIssues, _, err := git.Issues.ListProjectIssues(project.ID, options)
-		if err != nil {
-			log.Fatal(err)
-		}
-		issues = append(issues, pageIssues...)
-		if len(pageIssues) < perPage {
-			lastPageReached = true
-		} else {
-			page++
+	}
+	return anyLabelPresent
+}
+
+func hasLabel(issue *gitlab.Issue, wantedLabel string) bool {
+	labelPresent := false
+	for _, label := range issue.Labels {
+		if label == wantedLabel {
+			labelPresent = true
+			break
 		}
 	}
+	return labelPresent
+}
+
+func removeLabel(issue *gitlab.Issue, unwantedLabel string) *gitlab.Issue {
+	action := "Removing"
+	preposition := "from"
+	updatedLabels := gitlab.Labels{}
+	for _, label := range issue.Labels {
+		if !(label == unwantedLabel) {
+			updatedLabels = append(updatedLabels, label)
+		}
+	}
+	return adaptLabel(issue, unwantedLabel, &updatedLabels, action, preposition)
+}
+
+func addLabel(issue *gitlab.Issue, label string) *gitlab.Issue {
+	action := "Moving"
+	preposition := "to"
+	updatedLabels := append(issue.Labels, label)
+	return adaptLabel(issue, label, &updatedLabels, action, preposition)
+}
+
+func adaptLabel(issue *gitlab.Issue, label string, updatedLabels *gitlab.Labels, action string, preposition string) *gitlab.Issue {
+	issueName := "'" + issue.Title + "'"
+	log.Println(action, "issue", issueName, preposition, label)
+	options := &gitlab.UpdateIssueOptions{
+		Labels: updatedLabels,
+	}
+	return gitlabUtils.UpdateIssue(issue.IID, options)
+}
+
+func AdaptLabels() {
+	orderBy := "due_date"
+	sortOrder := "asc"
+	issues := gitlabUtils.GetSortedProjectIssues(orderBy, sortOrder)
 	for _, issue := range issues {
 		if issue.DueDate == nil {
 			continue
@@ -58,38 +79,23 @@ func AdaptLabels() {
 		}
 		issueDueWeekStart := dateUtils.GetStartOfWeek(issueDueTime)
 		currentWeekStart := dateUtils.GetStartOfWeek(time.Now())
-		issueDueThisWeek := issueDueWeekStart.Before(currentWeekStart) ||
-			dateUtils.AreDatesEqual(issueDueWeekStart, currentWeekStart)
-		if !issueDueThisWeek {
+		issuePastDue := issueDueTime.Before(time.Now())
+		issueDueToday := dateUtils.AreDatesEqual(issueDueTime, time.Now())
+		issueDueThisWeek := dateUtils.AreDatesEqual(issueDueWeekStart, currentWeekStart)
+		if !(issuePastDue || issueDueToday || issueDueThisWeek) {
 			break
 		}
-		issueHasNextWeekLabel := false
-		issueHasOtherLabel := false
-		for _, label := range issue.Labels {
-			if issueHasNextWeekLabel || issueHasOtherLabel {
-				break
-			}
-			if label == ThisWeekLabel {
-				issueHasNextWeekLabel = true
-			}
-			for _, otherLabel := range OtherLabels {
-				if label == otherLabel {
-					issueHasOtherLabel = true
-					break
+		issueHasOtherLabel := hasAnyLabel(issue, OtherLabels)
+		if !issueHasOtherLabel {
+			issueHasTodayLabel := hasLabel(issue, TodayLabel)
+			issueHasNextWeekLabel := hasLabel(issue, ThisWeekLabel)
+			if (issuePastDue || issueDueToday) && !issueHasTodayLabel {
+				issue = addLabel(issue, TodayLabel)
+				if issueHasNextWeekLabel {
+					removeLabel(issue, ThisWeekLabel)
 				}
-			}
-		}
-		issueNeedsThisWeekLabel := !issueHasNextWeekLabel && !issueHasOtherLabel
-		if issueNeedsThisWeekLabel {
-			issueName := "'" + issue.Title + "'"
-			log.Println("Moving issue", issueName, "to this week")
-			updatedLabels := append(issue.Labels, ThisWeekLabel)
-			options := &gitlab.UpdateIssueOptions{
-				Labels: &updatedLabels,
-			}
-			_, _, err := git.Issues.UpdateIssue(project.ID, issue.IID, options)
-			if err != nil {
-				log.Fatal(err)
+			} else if issueDueThisWeek && !issueHasNextWeekLabel {
+				addLabel(issue, ThisWeekLabel)
 			}
 		}
 	}
