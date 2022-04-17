@@ -7,6 +7,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 )
 
@@ -27,13 +28,13 @@ func WriteNotes(lastTime time.Time) {
 	}
 	// if standupIssue.NextTime.Before(time.Now()) {
 	if standupIssue.NextTime.Before(time.Now()) || true {
-		log.Println("TODO: Create standup notes")
 		issueDue := gitlabUtils.GetIssueDueDate(standupIssue)
-		title := StandupTitlePrefix + issueDue.Format(dateUtils.ShortISODateLayout)
-		// Create Wiki page
-		// Collect relevant issues
-		// TODO: What happens if wiki page with same name exists
+		issueDateString := issueDue.Format(dateUtils.ShortISODateLayout)
+		issueDateString := strings.ReplaceAll(issueDateString, "-", "–")
+		title := StandupTitlePrefix + issueDateString
 		if !gitlabUtils.WikiPageExists(title) {
+			// Collect relevant issues
+			log.Println("Creating new wiki page", title)
 			gitlabUtils.CreateWikiPage(title, "*This is another **test**.*")
 		}
 	}
