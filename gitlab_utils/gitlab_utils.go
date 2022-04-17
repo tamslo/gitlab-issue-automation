@@ -126,10 +126,12 @@ func GetSortedProjectIssues(orderBy string, sortOrder string, issueState string)
 			Page:    page,
 		}
 		options := &gitlab.ListProjectIssuesOptions{
-			State:       &issueState,
 			OrderBy:     &orderBy,
 			Sort:        &sortOrder,
 			ListOptions: *listOptions,
+		}
+		if issueState != "" {
+			options.State = &issueState
 		}
 		pageIssues, _, err := git.Issues.ListProjectIssues(project.ID, options)
 		if err != nil {
@@ -161,7 +163,7 @@ func CreateIssue(data *types.Metadata) error {
 		Description:  gitlab.String(data.Description),
 		Confidential: &data.Confidential,
 		CreatedAt:    &data.NextTime,
-		Labels:       &gitlab.Labels{strings.Join(data.Labels, ",")},
+		Labels:       &gitlab.Labels{strings.Join(append(data.Labels, "🔁 Recurring"), ",")},
 	}
 	if data.DueIn != "" {
 		dueDate := gitlab.ISOTime(GetIssueDueDate(data))

@@ -11,8 +11,12 @@ import (
 
 const ThisWeekLabel = "🗓 This week"
 const TodayLabel = "☀️ Today"
+const InProgressLabel = "🏃‍♀️ In progress"
+const WaitingLabel = "⏳ Waiting"
+const InOfficeLabel = "🏢 In office"
+const RecurringLabel = "🔁 Recurring"
 
-var OtherLabels = []string{"🏢 In office", "🏃‍♀️ In progress", "⏳ Waiting"}
+var ProgressLabels = []string{InProgressLabel, InOfficeLabel, WaitingLabel}
 
 func hasAnyLabel(issue *gitlab.Issue, labels []string) bool {
 	anyLabelPresent := false
@@ -86,8 +90,8 @@ func AdaptLabels() {
 		if !(issuePastDue || issueDueToday || issueDueThisWeek) {
 			break
 		}
-		issueHasOtherLabel := hasAnyLabel(issue, OtherLabels)
-		if !issueHasOtherLabel {
+		issueHasProgressLabel := hasAnyLabel(issue, ProgressLabels)
+		if !issueHasProgressLabel {
 			issueHasTodayLabel := hasLabel(issue, TodayLabel)
 			issueHasNextWeekLabel := hasLabel(issue, ThisWeekLabel)
 			if (issuePastDue || issueDueToday) && !issueHasTodayLabel {
