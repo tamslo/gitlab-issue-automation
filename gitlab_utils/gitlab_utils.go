@@ -183,11 +183,12 @@ func UpdateIssue(issueId int, options *gitlab.UpdateIssueOptions) *gitlab.Issue 
 
 func CreateWikiPage(title string, content string) {
 	format := "markdown"
-	options := gitlab.CreateWikiPageOptions{
+	options := &gitlab.CreateWikiPageOptions{
 		Content: &content,
 		Title:   &title,
 		Format:  &format,
 	}
-	wikisService := gitlab.WikisService{}
-	wikisService.CreateWikiPage(GetCiProjectId(), &options)
+	git := GetGitClient()
+	project := GetGitProject()
+	git.Wikis.CreateWikiPage(project.ID, options)
 }
