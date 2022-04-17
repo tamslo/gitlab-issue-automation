@@ -89,11 +89,11 @@ func WriteNotes(lastTime time.Time) {
 				if issue.UpdatedAt.After(lastNoteDate) {
 					content += "* [" + issue.Title + "]"
 					content += "(" + issue.WebURL + ")"
-					content += " \\[" + strings.Join(append(issue.Labels, issue.State), ", ") + "\\]"
+					content += " \\[" + strings.Join(append(issue.Labels, issue.State), ", ") + "\\]\n"
 				}
 			}
-			log.Println("Would create new wiki page", title, "with content", content)
-			// gitlabUtils.CreateWikiPage(title, content)
+			log.Println("Creating new wiki page", title, "with content", content)
+			gitlabUtils.CreateWikiPage(title, content)
 		} else {
 			log.Println("Skipping creation of wiki page", title, "because it already exists")
 		}
