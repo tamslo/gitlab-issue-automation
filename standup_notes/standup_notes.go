@@ -87,7 +87,7 @@ func WriteNotes(lastTime time.Time) {
 			relevantIssues := []*gitlab.Issue{}
 			projects := []string{}
 			for _, issue := range issues {
-				if boardLabels.HasLabel(issue, boardLabels.TestLabel) {
+				if boardLabels.HasLabel(issue, boardLabels.TestLabel) || boardLabels.HasLabel(issue, boardLabels.RecurringLabel) {
 					continue
 				}
 				if issue.UpdatedAt.After(lastNoteDate) {
