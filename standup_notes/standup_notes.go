@@ -57,7 +57,7 @@ func getLastNoteDate(currentDate time.Time) time.Time {
 }
 
 func printIssue(issue *gitlab.Issue) string {
-	issueString := "* [#" + fmt.Sprint(issue.IID) + issue.Title + "]"
+	issueString := "* [#" + fmt.Sprint(issue.IID) + " " + issue.Title + "]"
 	issueString += "(" + issue.WebURL + ")"
 	issueString += " \\[" + strings.Join(append(issue.Labels, issue.State), ", ") + "\\]\n"
 	return issueString
@@ -75,13 +75,11 @@ func WriteNotes(lastTime time.Time) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	// if standupIssue.NextTime.Before(time.Now()) {
-	if standupIssue.NextTime.Before(time.Now()) || true {
+	if standupIssue.NextTime.Before(time.Now()) {
 		issueDue := gitlabUtils.GetIssueDueDate(standupIssue)
 		issueDueString := escapeDashes(issueDue.Format(dateUtils.ShortISODateLayout))
 		title := StandupTitlePrefix + issueDueString
-		// if !gitlabUtils.WikiPageExists(title) {
-		if !gitlabUtils.WikiPageExists(title) || true {
+		if !gitlabUtils.WikiPageExists(title) {
 			lastNoteDate := getLastNoteDate(issueDue)
 			orderBy := "updated_at"
 			sortOrder := "desc"
