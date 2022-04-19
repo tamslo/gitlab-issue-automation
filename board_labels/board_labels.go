@@ -101,7 +101,7 @@ func AdaptLabels() {
 				if issueHasNextWeekLabel {
 					removeLabel(issue, ThisWeekLabel)
 				}
-			} else if issueDueThisWeek && !issueHasNextWeekLabel {
+			} else if (!issueHasTodayLabel && issueDueThisWeek && !issueHasNextWeekLabel) {
 				addLabel(issue, ThisWeekLabel)
 			}
 		}
