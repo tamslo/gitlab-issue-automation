@@ -78,31 +78,33 @@ func WriteNotes(lastTime time.Time) {
 				if boardLabels.HasLabel(issue, constants.TestLabel) || boardLabels.HasLabel(issue, constants.RecurringLabel) {
 					continue
 				}
-				if issue.UpdatedAt.After(lastNoteDate) && !issue.ClosedAt.Before(lastNoteDate) {
-					relevantIssues = append(relevantIssues, issue)
-					projectLabels := []string{}
-					for _, label := range issue.Labels {
-						isNonProjectLabel := true
-						for _, nonProjectLabel := range constants.NonProjectLabels {
-							if label == nonProjectLabel {
-								isNonProjectLabel = false
-								break
+				if issue.UpdatedAt.After(lastNoteDate) {
+					if issue.State != "closed" || (issue.State == "closed" && issue.ClosedAt.After(lastNoteDate)) {
+						relevantIssues = append(relevantIssues, issue)
+						projectLabels := []string{}
+						for _, label := range issue.Labels {
+							isNonProjectLabel := true
+							for _, nonProjectLabel := range constants.NonProjectLabels {
+								if label == nonProjectLabel {
+									isNonProjectLabel = false
+									break
+								}
+							}
+							if isNonProjectLabel {
+								projectLabels = append(projectLabels, label)
 							}
 						}
-						if isNonProjectLabel {
-							projectLabels = append(projectLabels, label)
-						}
-					}
-					for _, label := range projectLabels {
-						labelInProjects := false
-						for _, project := range projects {
-							if label == project {
-								labelInProjects = true
-								break
+						for _, label := range projectLabels {
+							labelInProjects := false
+							for _, project := range projects {
+								if label == project {
+									labelInProjects = true
+									break
+								}
 							}
-						}
-						if !labelInProjects {
-							projects = append(projects, label)
+							if !labelInProjects {
+								projects = append(projects, label)
+							}
 						}
 					}
 				}
@@ -116,7 +118,6 @@ func WriteNotes(lastTime time.Time) {
 			content += "\n"
 			content += "## Issues\n"
 			content += "\n"
-			// TODO: also sort by multiple projects (issues should not occur multiple times)
 			coveredIssueIds := []int{}
 			for _, project := range projects {
 				content += "### " + project + "\n"
