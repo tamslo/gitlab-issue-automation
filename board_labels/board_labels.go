@@ -1,6 +1,7 @@
 package boardLabels
 
 import (
+	constants "gitlab-issue-automation/constants"
 	dateUtils "gitlab-issue-automation/date_utils"
 	gitlabUtils "gitlab-issue-automation/gitlab_utils"
 	"log"
@@ -8,17 +9,6 @@ import (
 
 	"github.com/xanzy/go-gitlab"
 )
-
-const ThisWeekLabel = "🗓 This week"
-const TodayLabel = "☀️ Today"
-const InProgressLabel = "🏃‍♀️ In progress"
-const WaitingLabel = "⏳ Waiting"
-const InOfficeLabel = "🏢 In office"
-const RecurringLabel = "🔁 Recurring"
-const TestLabel = "🧪 Test"
-
-var ProgressLabels = []string{InProgressLabel, InOfficeLabel, WaitingLabel}
-var NonProjectLabels = []string{ThisWeekLabel, TodayLabel, InProgressLabel, WaitingLabel, InOfficeLabel, RecurringLabel, TestLabel}
 
 func hasAnyLabel(issue *gitlab.Issue, labels []string) bool {
 	anyLabelPresent := false
@@ -92,17 +82,17 @@ func AdaptLabels() {
 		if !(issuePastDue || issueDueToday || issueDueThisWeek) {
 			break
 		}
-		issueHasProgressLabel := hasAnyLabel(issue, ProgressLabels)
+		issueHasProgressLabel := hasAnyLabel(issue, constants.ProgressLabels)
 		if !issueHasProgressLabel {
-			issueHasTodayLabel := HasLabel(issue, TodayLabel)
-			issueHasNextWeekLabel := HasLabel(issue, ThisWeekLabel)
+			issueHasTodayLabel := HasLabel(issue, constants.TodayLabel)
+			issueHasNextWeekLabel := HasLabel(issue, constants.ThisWeekLabel)
 			if (issuePastDue || issueDueToday) && !issueHasTodayLabel {
-				issue = addLabel(issue, TodayLabel)
+				issue = addLabel(issue, constants.TodayLabel)
 				if issueHasNextWeekLabel {
-					removeLabel(issue, ThisWeekLabel)
+					removeLabel(issue, constants.ThisWeekLabel)
 				}
-			} else if (!issueHasTodayLabel && issueDueThisWeek && !issueHasNextWeekLabel) {
-				addLabel(issue, ThisWeekLabel)
+			} else if !issueHasTodayLabel && issueDueThisWeek && !issueHasNextWeekLabel {
+				addLabel(issue, constants.ThisWeekLabel)
 			}
 		}
 	}

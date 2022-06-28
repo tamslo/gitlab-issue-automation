@@ -3,6 +3,7 @@ package standupNotes
 import (
 	"fmt"
 	boardLabels "gitlab-issue-automation/board_labels"
+	constants "gitlab-issue-automation/constants"
 	dateUtils "gitlab-issue-automation/date_utils"
 	gitlabUtils "gitlab-issue-automation/gitlab_utils"
 	recurringIssues "gitlab-issue-automation/recurring_issues"
@@ -39,10 +40,14 @@ func getLastNoteDate(currentDate time.Time) time.Time {
 		if err != nil {
 			log.Fatal(err)
 		}
+		log.Println("Debug: thisStandupDate:", thisStandupDate)
+		log.Println("Debug: latestStandup:", latestStandup)
+		log.Println("Debug: setting to thisStandupDate:", thisStandupDate.After(latestStandup))
 		if thisStandupDate.After(latestStandup) {
 			latestStandup = thisStandupDate
 		}
 	}
+	log.Println("Debug: final latestStandup:", latestStandup)
 	return latestStandup
 }
 
@@ -54,7 +59,7 @@ func printIssue(issue *gitlab.Issue) string {
 }
 
 func WriteNotes(lastTime time.Time) {
-	standupIssuePath := filepath.Join(gitlabUtils.GetRecurringIssuesPath(), "prepare-standup.md")
+	standupIssuePath := filepath.Join(gitlabUtils.GetRecurringIssuesPath(), constants.StandupIssueTemplateName)
 	_, err := os.Stat(standupIssuePath)
 	standupIssueExists := err == nil
 	if !standupIssueExists {
@@ -77,7 +82,7 @@ func WriteNotes(lastTime time.Time) {
 			relevantIssues := []*gitlab.Issue{}
 			projects := []string{}
 			for _, issue := range issues {
-				if boardLabels.HasLabel(issue, boardLabels.TestLabel) || boardLabels.HasLabel(issue, boardLabels.RecurringLabel) {
+				if boardLabels.HasLabel(issue, constants.TestLabel) || boardLabels.HasLabel(issue, constants.RecurringLabel) {
 					continue
 				}
 				if issue.UpdatedAt.After(lastNoteDate) {
@@ -85,7 +90,7 @@ func WriteNotes(lastTime time.Time) {
 					projectLabels := []string{}
 					for _, label := range issue.Labels {
 						isNonProjectLabel := true
-						for _, nonProjectLabel := range boardLabels.NonProjectLabels {
+						for _, nonProjectLabel := range constants.NonProjectLabels {
 							if label == nonProjectLabel {
 								isNonProjectLabel = false
 								break

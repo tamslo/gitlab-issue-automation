@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	constants "gitlab-issue-automation/constants"
 	types "gitlab-issue-automation/types"
 
 	"github.com/xanzy/go-gitlab"
@@ -78,7 +79,7 @@ func GetGitProject() *gitlab.Project {
 }
 
 func GetRecurringIssuesPath() string {
-	return path.Join(GetCiProjectDir(), ".gitlab/recurring_issue_templates/")
+	return path.Join(GetCiProjectDir(), constants.IssueTemplatePath)
 }
 
 func GetLastRunTime() time.Time {
