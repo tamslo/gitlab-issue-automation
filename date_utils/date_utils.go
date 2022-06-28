@@ -1,6 +1,7 @@
 package dateUtils
 
 import (
+	"regexp"
 	"strings"
 	"time"
 )
@@ -30,6 +31,11 @@ func EscapeDashes(text string) string {
 
 func UnescapeDashes(text string) string {
 	return strings.ReplaceAll(text, enDash, dash)
+}
+
+func IsDashedDate(text string) bool {
+	isDashedDate, _ := regexp.MatchString(`\d{4}–\d{2}–\d{2}`, text)
+	return isDashedDate
 }
 
 func GetEnDashDate(date time.Time) string {

@@ -37,7 +37,10 @@ func getLastNoteDate(currentDate time.Time) time.Time {
 		if !strings.HasPrefix(wikiPage.Slug, StandupTitlePrefix) {
 			continue
 		}
-		thisStandupDate, err := time.Parse(dateUtils.ShortISODateLayout, dateUtils.UnescapeDashes(strings.Replace(wikiPage.Title, StandupTitlePrefix, "", 1)))
+		if !dateUtils.IsDashedDate(wikiPage.Title) {
+			continue
+		}
+		thisStandupDate, err := time.Parse(dateUtils.ShortISODateLayout, dateUtils.UnescapeDashes(wikiPage.Title))
 		if err != nil {
 			log.Fatal(err)
 		}

@@ -77,7 +77,7 @@ rules:
 
 ### Automatically Moving Issues on Board
 
-The script also checks whether labels for custom issue management on a board view exist (see `adaptaLabels`).
+The script also checks whether labels for custom issue management on a board view exist (see label definitions in `constants` and `board_labels/board_labels.go`).
 
 If an issue is due, the `TodayLabel` or `ThisWeekLabel` will be added if it is not present and no `OtherLabels` exist that indicate that the issue is in progress. If the `TodayLabel` is added and the `ThisWeekLabel` present, the latter will be removed.
 
@@ -85,4 +85,4 @@ If an issue is due, the `TodayLabel` or `ThisWeekLabel` will be added if it is n
 
 A helper will create standup meeting notes on the day of the `prepare-standup` recurring issue, if the issue exists and no notes exist yet. All issues that were updated between the last standup meeting note and the current one will be included as a list to help filling out the table (included as template).
 
-Currently, the setup is adapted to write to a group wiki of the group given in `constants.WikiProjectID` – this is not pretty and should be part of a config, but this should be refactored later.
+Currently, the setup is adapted to write to a group wiki of the group given in `constants.WikiProjectID` – this is not pretty and should be part of a config, but this should be refactored later (use `GROUP_WIKI_ID` CI Variable).
