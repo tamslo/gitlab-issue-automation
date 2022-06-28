@@ -31,8 +31,6 @@ func getLastNoteDate(currentDate time.Time) time.Time {
 	if err != nil {
 		log.Fatal(err)
 	}
-	log.Println("- Debugging getting last note date")
-	log.Println("- Debug: wiki pages:", wikiPages)
 	for _, wikiPage := range wikiPages {
 		if !strings.HasPrefix(wikiPage.Slug, StandupTitlePrefix) {
 			continue
@@ -44,14 +42,10 @@ func getLastNoteDate(currentDate time.Time) time.Time {
 		if err != nil {
 			log.Fatal(err)
 		}
-		log.Println("- Debug: thisStandupDate:", thisStandupDate)
-		log.Println("- Debug: latestStandup:", latestStandup)
-		log.Println("- Debug: setting to thisStandupDate:", thisStandupDate.After(latestStandup))
 		if thisStandupDate.After(latestStandup) {
 			latestStandup = thisStandupDate
 		}
 	}
-	log.Println("- Debug: final latestStandup:", latestStandup)
 	return latestStandup
 }
 
@@ -80,6 +74,7 @@ func WriteNotes(lastTime time.Time) {
 		title := StandupTitlePrefix + issueDueString
 		if !gitlabUtils.WikiPageExists(title) {
 			lastNoteDate := getLastNoteDate(issueDue)
+			log.Println("- Debug: Last note date:", lastNoteDate)
 			orderBy := "updated_at"
 			sortOrder := "desc"
 			issues := gitlabUtils.GetSortedProjectIssues(orderBy, sortOrder, "")
@@ -118,6 +113,7 @@ func WriteNotes(lastTime time.Time) {
 					}
 				}
 			}
+			log.Println("- Debug: Relevant issues:", relevantIssues)
 			content := "| :rainbow: Project | :back: What I did | :soon: What I will do | :warning:️ Problems | :pencil: Notes |\n"
 			content += "|-------------------|-------------------|-----------------------|--------------------|----------------|\n"
 			sort.Strings(projects)
