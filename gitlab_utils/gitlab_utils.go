@@ -200,7 +200,7 @@ func WikiPageExists(title string) bool {
 		project := GetGitProject()
 		_, _, err = git.Wikis.GetWikiPage(project.ID, title)
 	} else {
-		_, _, err = git.GroupWikis.GetGroupWikiPage(constants.WikiProjectID, title)
+		_, _, err = git.GroupWikis.GetGroupWikiPage(groupWikiId, title)
 	}
 	return err == nil
 }
@@ -251,7 +251,7 @@ func CreateWikiPage(title string, content string) {
 			Title:   &title,
 			Format:  &format,
 		}
-		_, _, err = git.GroupWikis.CreateGroupWikiPage(constants.WikiProjectID, options)
+		_, _, err = git.GroupWikis.CreateGroupWikiPage(groupWikiId, options)
 	}
 	if err != nil {
 		log.Fatal(err)

@@ -83,6 +83,8 @@ If an issue is due, the `TodayLabel` or `ThisWeekLabel` will be added if it is n
 
 ### Add Standup Notes
 
-A helper will create standup meeting notes on the day of the `prepare-standup` recurring issue, if the issue exists and no notes exist yet. All issues that were updated between the last standup meeting note and the current one will be included as a list to help filling out the table (included as template).
+A helper will create standup meeting notes on the day of the `prepare-standup` recurring issue, if the issue exists and no notes exist yet.
 
-Currently, the setup is adapted to write to a group wiki of the group given in `constants.WikiProjectID` – this is not pretty and should be part of a config, but this should be refactored later (use `GROUP_WIKI_ID` CI Variable).
+All issues that were updated between the last standup meeting note and the current one that were not closed before the last standup note will be included as a list to help filling out the table (included as template).
+
+By default, the wiki page is created in the wiki of the current project. If the CI/CD variable `GROUP_WIKI_ID` is set to the ID of a group, the page will be created in the wiki of this group.

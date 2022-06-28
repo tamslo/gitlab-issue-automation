@@ -2,7 +2,6 @@ package constants
 
 const IssueTemplatePath = ".gitlab/recurring_issue_templates/"
 const StandupIssueTemplateName = "prepare-standup.md" // for this template notes will be created
-const WikiProjectID = 7170
 
 // Label definitions
 
