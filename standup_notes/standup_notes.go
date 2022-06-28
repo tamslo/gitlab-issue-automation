@@ -53,11 +53,11 @@ func getComparableLabels(issue *gitlab.Issue) string {
 func printIssue(issue *gitlab.Issue) string {
 	issueString := "* "
 	if issue.State == "closed" {
-		issueString += "🔴 "
+		issueString += "✅ "
 	} else if issue.State == "opened" {
-		issueString += "🟢 "
+		issueString += "📝 "
 	} else {
-		issueString += "⚪️ "
+		issueString += "❓ "
 	}
 	issueString += "[#" + fmt.Sprint(issue.IID) + " " + issue.Title + "]"
 	issueString += "(" + issue.WebURL + ")"
