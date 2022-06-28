@@ -67,21 +67,21 @@ func processIssueFile(lastTime time.Time) filepath.WalkFunc {
 		if filepath.Ext(path) != ".md" {
 			return nil
 		}
-		log.Println("Checking", path)
+		log.Println("- Checking", path)
 		verbose := true
 		data, err := GetRecurringIssue(path, lastTime, verbose)
 		if err != nil {
 			return err
 		}
 		if data.NextTime.Before(time.Now()) {
-			log.Println(path, "was due", data.NextTime.Format(time.RFC3339), "- creating new issue")
+			log.Println("--", info.Name(), "was due", data.NextTime.Format(time.RFC3339), "- creating new issue")
 
 			err := gitlabUtils.CreateIssue(data)
 			if err != nil {
 				return err
 			}
 		} else {
-			log.Println(path, "is due", data.NextTime.Format(time.RFC3339))
+			log.Println("--", info.Name(), "is due", data.NextTime.Format(time.RFC3339))
 		}
 		return nil
 	}

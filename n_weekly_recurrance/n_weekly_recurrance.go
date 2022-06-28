@@ -30,8 +30,8 @@ func GetNext(nextTime time.Time, data *types.Metadata, verbose bool) time.Time {
 		nextIssueWeek := lastIssueWeek.AddDate(0, 0, 7*data.WeeklyRecurrence)
 		daysToAdd := math.Round(nextIssueWeek.Sub(currentWeek).Hours() / 24)
 		if verbose {
-			dueInWeeks := math.Round(math.Abs(daysToAdd/7))
-			log.Println("Next", data.WeeklyRecurrence, "weekly occurrence for", data.Title, "in", dueInWeeks, "week(s)")
+			dueInWeeks := math.Round(math.Abs(daysToAdd / 7))
+			log.Println("-- Next", data.WeeklyRecurrence, "weekly occurrence for", data.Title, "in", dueInWeeks, "week(s)")
 		}
 		nextTime = nextTime.AddDate(0, 0, int(daysToAdd))
 	}
