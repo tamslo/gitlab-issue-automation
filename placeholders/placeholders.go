@@ -20,9 +20,13 @@ func getLastMonth(data *types.Metadata) string {
 const dateEnDashPlaceholder = "{due_date_en_dash}"
 
 func getEnDashDate(data *types.Metadata) string {
-	issueDue := gitlabUtils.GetIssueDueDate(data)
-	enDashDate := dateUtils.GetEnDashDate(issueDue)
-	return enDashDate
+	if data.DueIn != "" {
+		issueDue := gitlabUtils.GetIssueDueDate(data)
+		enDashDate := dateUtils.GetEnDashDate(issueDue)
+		return enDashDate
+	} else {
+		return "PLEASE_ADD_DUEIN_TO_ISSUE_DEFINITION"
+	}
 }
 
 var placeholders = map[string]func(*types.Metadata) string{
