@@ -17,7 +17,7 @@ func getLastMonth(data *types.Metadata) string {
 	return lastMonthString
 }
 
-const dateEnDashPlaceholder = "{date_en_dash}"
+const dateEnDashPlaceholder = "{due_date_en_dash}"
 
 func getEnDashDate(data *types.Metadata) string {
 	issueDue := gitlabUtils.GetIssueDueDate(data)
