@@ -35,3 +35,8 @@ type ExceptionRule struct {
 	Issue      string   `yaml:"issue"`
 	Exceptions []string `yaml:"exceptions"`
 }
+
+type WikiMetadata struct {
+	Title string
+	Slug  string
+}

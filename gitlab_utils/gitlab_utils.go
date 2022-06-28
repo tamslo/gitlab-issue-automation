@@ -205,23 +205,31 @@ func WikiPageExists(title string) bool {
 	return err == nil
 }
 
-func GetWikiPages() interface{} {
+func GetWikiPagesMetadata() []types.WikiMetadata {
 	git := GetGitClient()
 	groupWikiId := GetGroupWikiId()
-	var wikiPages interface{}
-	var err error
+	wikiMetadata := []types.WikiMetadata{}
 	if groupWikiId == "" {
 		project := GetGitProject()
 		options := &gitlab.ListWikisOptions{}
-		wikiPages, _, err = git.Wikis.ListWikis(project.ID, options)
+		wikiPages, _, err := git.Wikis.ListWikis(project.ID, options)
+		if err != nil {
+			log.Fatal(err)
+		}
+		for _, wikiPage := range wikiPages {
+			wikiMetadata = append(wikiMetadata, types.WikiMetadata{Title: wikiPage.Title, Slug: wikiPage.Slug})
+		}
 	} else {
 		options := &gitlab.ListGroupWikisOptions{}
-		wikiPages, _, err = git.GroupWikis.ListGroupWikis(groupWikiId, options)
+		wikiPages, _, err := git.GroupWikis.ListGroupWikis(groupWikiId, options)
+		if err != nil {
+			log.Fatal(err)
+		}
+		for _, wikiPage := range wikiPages {
+			wikiMetadata = append(wikiMetadata, types.WikiMetadata{Title: wikiPage.Title, Slug: wikiPage.Slug})
+		}
 	}
-	if err != nil {
-		log.Fatal(err)
-	}
-	return wikiPages
+	return wikiMetadata
 }
 
 func CreateWikiPage(title string, content string) {
