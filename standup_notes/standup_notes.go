@@ -44,10 +44,24 @@ func getLastNoteDate(currentDate time.Time) time.Time {
 	return latestStandup
 }
 
+func getComparableLabels(issue *gitlab.Issue) string {
+	labels := issue.Labels
+	sort.Strings(labels)
+	return strings.Join(labels, ", ")
+}
+
 func printIssue(issue *gitlab.Issue) string {
-	issueString := "* [#" + fmt.Sprint(issue.IID) + " " + issue.Title + "]"
+	issueString := "* "
+	if issue.State == "closed" {
+		issueString += "🔴 "
+	} else if issue.State == "opened" {
+		issueString += "🟢 "
+	} else {
+		issueString += "⚪️ "
+	}
+	issueString += "[#" + fmt.Sprint(issue.IID) + " " + issue.Title + "]"
 	issueString += "(" + issue.WebURL + ")"
-	issueString += " \\[" + strings.Join(append(issue.Labels, issue.State), ", ") + "\\]\n"
+	issueString += "(" + getComparableLabels(issue) + ")\n"
 	return issueString
 }
 
@@ -118,36 +132,14 @@ func WriteNotes(lastTime time.Time) {
 			content += "\n"
 			content += "## Issues\n"
 			content += "\n"
-			coveredIssueIds := []int{}
-			for _, project := range projects {
-				content += "### " + project + "\n"
-				content += "\n"
-				for _, issue := range relevantIssues {
-					if boardLabels.HasLabel(issue, project) {
-						coveredIssueIds = append(coveredIssueIds, issue.ID)
-						content += printIssue(issue)
-					}
-				}
-			}
-			content += "\n"
-			content += "### Non-project issues\n"
-			content += "\n"
-			allIssuesCovered := true
+
+			sort.Slice(relevantIssues, func(firstIndex, secondIndex int) bool {
+				firstLabels := getComparableLabels(relevantIssues[firstIndex])
+				secondLabels := getComparableLabels(relevantIssues[secondIndex])
+				return firstLabels < secondLabels
+			})
 			for _, issue := range relevantIssues {
-				issueCovered := false
-				for _, issueId := range coveredIssueIds {
-					if issueId == issue.ID {
-						issueCovered = true
-						break
-					}
-				}
-				if !issueCovered {
-					allIssuesCovered = false
-					content += printIssue(issue)
-				}
-			}
-			if allIssuesCovered {
-				content += "_No non-project issues present_"
+				content += printIssue(issue)
 			}
 			log.Println("- Creating new wiki page", title)
 			gitlabUtils.CreateWikiPage(title, content)
