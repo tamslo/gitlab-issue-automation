@@ -42,17 +42,17 @@ func removeLabel(issue *gitlab.Issue, unwantedLabel string) *gitlab.Issue {
 			updatedLabels = append(updatedLabels, label)
 		}
 	}
-	return adaptLabel(issue, unwantedLabel, &updatedLabels, action, preposition)
+	return adaptLabel(issue, unwantedLabel, updatedLabels, action, preposition)
 }
 
 func addLabel(issue *gitlab.Issue, label string) *gitlab.Issue {
 	action := "Moving"
 	preposition := "to"
 	updatedLabels := append(issue.Labels, label)
-	return adaptLabel(issue, label, &updatedLabels, action, preposition)
+	return adaptLabel(issue, label, updatedLabels, action, preposition)
 }
 
-func adaptLabel(issue *gitlab.Issue, label string, updatedLabels *gitlab.Labels, action string, preposition string) *gitlab.Issue {
+func adaptLabel(issue *gitlab.Issue, label string, updatedLabels gitlab.Labels, action string, preposition string) *gitlab.Issue {
 	issueName := "'" + issue.Title + "'"
 	log.Println("-", action, "issue", issueName, preposition, label)
 	options := &gitlab.UpdateIssueOptions{

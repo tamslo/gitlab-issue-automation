@@ -164,7 +164,7 @@ func CreateIssue(data *types.Metadata) error {
 		Description:  gitlab.String(data.Description),
 		Confidential: &data.Confidential,
 		CreatedAt:    &data.NextTime,
-		Labels:       &gitlab.Labels{strings.Join(append(data.Labels, "🔁 Recurring"), ",")},
+		Labels:       gitlab.Labels{strings.Join(append(data.Labels, "🔁 Recurring"), ",")},
 	}
 	if data.DueIn != "" {
 		dueDate := gitlab.ISOTime(GetIssueDueDate(data))
@@ -195,14 +195,14 @@ func WikiPageExists(title string) bool {
 }
 
 func CreateWikiPage(title string, content string) {
-	format := "markdown"
-	options := &gitlab.CreateWikiPageOptions{
+	format := gitlab.WikiFormatValue("markdown")
+	options := &gitlab.CreateGroupWikiPageOptions{
 		Content: &content,
 		Title:   &title,
 		Format:  &format,
 	}
 	git := GetGitClient()
-	_, _, err := git.Wikis.CreateWikiPage(constants.WikiProjectID, options)
+	_, _, err := git.GroupWikis.CreateGroupWikiPage(constants.WikiProjectID, options)
 	if err != nil {
 		log.Fatal(err)
 	}
