@@ -29,7 +29,6 @@ func parseMetadata(contents []byte) (*types.Metadata, error) {
 	if err != nil {
 		return nil, err
 	}
-	data = placeholders.ApplyPlaceholders(data)
 	return data, nil
 }
 
@@ -56,6 +55,7 @@ func GetRecurringIssue(path string, lastTime time.Time, verbose bool) (*types.Me
 	}
 	recurringIssue.CronExpression = *cronExpression
 	recurringIssue.NextTime = getNextExecutionTime(lastTime, recurringIssue, verbose)
+	recurringIssue = placeholders.ApplyPlaceholders(recurringIssue)
 	return recurringIssue, nil
 }
 
