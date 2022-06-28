@@ -18,11 +18,12 @@ import (
 type envVariableParameters struct {
 	Name                  string
 	ErrorMessageOverwrite string
+	Optional              bool
 }
 
 func GetEnvVariable(parameters *envVariableParameters) string {
 	envVariable := os.Getenv(parameters.Name)
-	if envVariable == "" {
+	if envVariable == "" && !parameters.Optional {
 		errorMessage := "This tool must be ran as part of a GitLab pipeline."
 		if parameters.ErrorMessageOverwrite != "" {
 			errorMessage = parameters.ErrorMessageOverwrite
@@ -53,6 +54,10 @@ func GetCiProjectDir() string {
 
 func GetCiJobName() string {
 	return GetEnvVariable(&envVariableParameters{Name: "CI_JOB_NAME"})
+}
+
+func GetGroupWikiId() string {
+	return GetEnvVariable(&envVariableParameters{Name: "GROUP_WIKI_ID", Optional: true})
 }
 
 func GetGitClient() *gitlab.Client {
@@ -189,14 +194,30 @@ func UpdateIssue(issueId int, options *gitlab.UpdateIssueOptions) *gitlab.Issue 
 
 func WikiPageExists(title string) bool {
 	git := GetGitClient()
-	_, _, err := git.GroupWikis.GetGroupWikiPage(constants.WikiProjectID, title)
+	groupWikiId := GetGroupWikiId()
+	var err error
+	if groupWikiId == "" {
+		project := GetGitProject()
+		_, _, err = git.Wikis.GetWikiPage(project.ID, title)
+	} else {
+		_, _, err = git.GroupWikis.GetGroupWikiPage(constants.WikiProjectID, title)
+	}
 	return err == nil
 }
 
-func GetWikiPages() []*gitlab.GroupWiki {
+func GetWikiPages() interface{} {
 	git := GetGitClient()
-	options := &gitlab.ListGroupWikisOptions{}
-	wikiPages, _, err := git.GroupWikis.ListGroupWikis(constants.WikiProjectID, options)
+	groupWikiId := GetGroupWikiId()
+	var wikiPages interface{}
+	var err error
+	if groupWikiId == "" {
+		project := GetGitProject()
+		options := &gitlab.ListWikisOptions{}
+		wikiPages, _, err = git.Wikis.ListWikis(project.ID, options)
+	} else {
+		options := &gitlab.ListGroupWikisOptions{}
+		wikiPages, _, err = git.GroupWikis.ListGroupWikis(groupWikiId, options)
+	}
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -204,14 +225,26 @@ func GetWikiPages() []*gitlab.GroupWiki {
 }
 
 func CreateWikiPage(title string, content string) {
-	format := gitlab.WikiFormatValue("markdown")
-	options := &gitlab.CreateGroupWikiPageOptions{
-		Content: &content,
-		Title:   &title,
-		Format:  &format,
-	}
 	git := GetGitClient()
-	_, _, err := git.GroupWikis.CreateGroupWikiPage(constants.WikiProjectID, options)
+	groupWikiId := GetGroupWikiId()
+	format := gitlab.WikiFormatValue("markdown")
+	var err error
+	if groupWikiId == "" {
+		project := GetGitProject()
+		options := &gitlab.CreateWikiPageOptions{
+			Content: &content,
+			Title:   &title,
+			Format:  &format,
+		}
+		_, _, err = git.Wikis.CreateWikiPage(project.ID, options)
+	} else {
+		options := &gitlab.CreateGroupWikiPageOptions{
+			Content: &content,
+			Title:   &title,
+			Format:  &format,
+		}
+		_, _, err = git.GroupWikis.CreateGroupWikiPage(constants.WikiProjectID, options)
+	}
 	if err != nil {
 		log.Fatal(err)
 	}

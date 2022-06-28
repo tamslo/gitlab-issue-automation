@@ -10,6 +10,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"reflect"
 	"sort"
 	"strings"
 	"time"
@@ -21,12 +22,14 @@ const StandupTitlePrefix = "Standup-Meetings/"
 const lookupStart = "2022-04-06"
 
 func getLastNoteDate(currentDate time.Time) time.Time {
-	wikiPages := gitlabUtils.GetWikiPages()
+	wikiPages := reflect.ValueOf(gitlabUtils.GetWikiPages())
 	latestStandup, err := time.Parse(dateUtils.ShortISODateLayout, lookupStart)
 	if err != nil {
 		log.Fatal(err)
 	}
-	for _, wikiPage := range wikiPages {
+	for pageIndex := 0; pageIndex < wikiPages.Len(); pageIndex++ {
+		wikiPage := wikiPages.Index(pageIndex)
+		log.Println(wikiPage)
 		if !strings.HasPrefix(wikiPage.Slug, StandupTitlePrefix) {
 			continue
 		}
