@@ -26,8 +26,8 @@ func getEnDashDate(data *types.Metadata) string {
 		enDashDate := dateUtils.GetEnDashDate(issueDue)
 		return enDashDate
 	} else {
-		log.Fatal("Error: due_date_en_dash placeholder used but no due date specified")
-		return dateEnDashPlaceholder // unnessessary, but makes the compiler happy
+		log.Println("Warning: due_date_en_dash placeholder used but no due date specified")
+		return dateEnDashPlaceholder
 	}
 }
 
