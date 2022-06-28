@@ -34,7 +34,7 @@ func getLastNoteDate(currentDate time.Time) time.Time {
 	log.Println("- Debugging getting last note date")
 	log.Println("- Debug: wiki pages:", wikiPages)
 	for _, wikiPage := range wikiPages {
-		if !strings.HasPrefix(wikiPage.Title, StandupTitlePrefix) {
+		if !strings.HasPrefix(wikiPage.Slug, StandupTitlePrefix) {
 			continue
 		}
 		thisStandupDate, err := time.Parse(dateUtils.ShortISODateLayout, dateUtils.UnescapeDashes(strings.Replace(wikiPage.Title, StandupTitlePrefix, "", 1)))
@@ -156,8 +156,7 @@ func WriteNotes(lastTime time.Time) {
 				content += "_No non-project issues present_"
 			}
 			log.Println("- Creating new wiki page", title)
-			// Skip for testing
-			// gitlabUtils.CreateWikiPage(title, content)
+			gitlabUtils.CreateWikiPage(title, content)
 		} else {
 			log.Println("- Skipping creation of wiki page", title, "because it already exists")
 		}
