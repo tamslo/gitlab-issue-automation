@@ -21,12 +21,7 @@ const StandupTitlePrefix = "Standup-Meetings/"
 const lookupStart = "2022-04-06"
 
 func getLastNoteDate(currentDate time.Time) time.Time {
-	git := gitlabUtils.GetGitClient()
-	options := &gitlab.ListGroupWikisOptions{}
-	wikiPages, _, err := git.GroupWikis.ListGroupWikis(constants.WikiProjectID, options)
-	if err != nil {
-		log.Fatal(err)
-	}
+	wikiPages := gitlabUtils.GetWikiPages()
 	latestStandup, err := time.Parse(dateUtils.ShortISODateLayout, lookupStart)
 	if err != nil {
 		log.Fatal(err)
@@ -84,6 +79,8 @@ func WriteNotes(lastTime time.Time) {
 				if boardLabels.HasLabel(issue, constants.TestLabel) || boardLabels.HasLabel(issue, constants.RecurringLabel) {
 					continue
 				}
+				log.Println("- Debug: Issue updated:", issue.UpdatedAt)
+				log.Println("- Debug: Issue relevant:", issue.UpdatedAt.After(lastNoteDate))
 				if issue.UpdatedAt.After(lastNoteDate) {
 					relevantIssues = append(relevantIssues, issue)
 					projectLabels := []string{}

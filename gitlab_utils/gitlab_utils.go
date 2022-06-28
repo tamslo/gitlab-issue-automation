@@ -189,9 +189,18 @@ func UpdateIssue(issueId int, options *gitlab.UpdateIssueOptions) *gitlab.Issue 
 
 func WikiPageExists(title string) bool {
 	git := GetGitClient()
-	project := GetGitProject()
-	_, _, err := git.Wikis.GetWikiPage(project.ID, title)
+	_, _, err := git.GroupWikis.GetGroupWikiPage(constants.WikiProjectID, title)
 	return err == nil
+}
+
+func GetWikiPages() []*gitlab.GroupWiki {
+	git := GetGitClient()
+	options := &gitlab.ListGroupWikisOptions{}
+	wikiPages, _, err := git.GroupWikis.ListGroupWikis(constants.WikiProjectID, options)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return wikiPages
 }
 
 func CreateWikiPage(title string, content string) {
