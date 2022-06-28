@@ -4,7 +4,6 @@ import (
 	dateUtils "gitlab-issue-automation/date_utils"
 	gitlabUtils "gitlab-issue-automation/gitlab_utils"
 	types "gitlab-issue-automation/types"
-	"log"
 	"strings"
 	"time"
 )
@@ -26,8 +25,7 @@ func getEnDashDate(data *types.Metadata) string {
 		enDashDate := dateUtils.GetEnDashDate(issueDue)
 		return enDashDate
 	} else {
-		log.Println("Warning: due_date_en_dash placeholder used but no due date specified")
-		return dateEnDashPlaceholder
+		return "NO_DUE_DATE_GIVEN"
 	}
 }
 
