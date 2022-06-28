@@ -17,17 +17,7 @@ import (
 )
 
 const StandupTitlePrefix = "Standup-Meetings/"
-const enDash = "–"
-const dash = "-"
 const lookupStart = "2022-04-06"
-
-func escapeDashes(text string) string {
-	return strings.ReplaceAll(text, dash, enDash)
-}
-
-func unescapeDashes(text string) string {
-	return strings.ReplaceAll(text, enDash, dash)
-}
 
 func getLastNoteDate(currentDate time.Time) time.Time {
 	git := gitlabUtils.GetGitClient()
@@ -45,7 +35,7 @@ func getLastNoteDate(currentDate time.Time) time.Time {
 		if !strings.HasPrefix(wikiPage.Title, StandupTitlePrefix) {
 			continue
 		}
-		thisStandupDate, err := time.Parse(dateUtils.ShortISODateLayout, unescapeDashes(strings.Replace(wikiPage.Title, StandupTitlePrefix, "", 1)))
+		thisStandupDate, err := time.Parse(dateUtils.ShortISODateLayout, dateUtils.UnescapeDashes(strings.Replace(wikiPage.Title, StandupTitlePrefix, "", 1)))
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -77,7 +67,7 @@ func WriteNotes(lastTime time.Time) {
 	}
 	if standupIssue.NextTime.Before(time.Now()) {
 		issueDue := gitlabUtils.GetIssueDueDate(standupIssue)
-		issueDueString := escapeDashes(issueDue.Format(dateUtils.ShortISODateLayout))
+		issueDueString := dateUtils.GetEnDashDate(issueDue)
 		title := StandupTitlePrefix + issueDueString
 		if !gitlabUtils.WikiPageExists(title) {
 			lastNoteDate := getLastNoteDate(issueDue)
