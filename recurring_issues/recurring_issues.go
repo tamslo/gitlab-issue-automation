@@ -62,13 +62,17 @@ func GetRecurringIssue(path string, lastTime time.Time, verbose bool) (*types.Me
 func processIssueFile(lastTime time.Time) filepath.WalkFunc {
 	return func(path string, info os.FileInfo, err error) error {
 		if err != nil {
-			log.Fatal(err)
+			return err
 		}
 		if filepath.Ext(path) != ".md" {
 			return nil
 		}
+		log.Println("Checking", path)
 		verbose := true
 		data, err := GetRecurringIssue(path, lastTime, verbose)
+		if err != nil {
+			return err
+		}
 		if data.NextTime.Before(time.Now()) {
 			log.Println(path, "was due", data.NextTime.Format(time.RFC3339), "- creating new issue")
 
