@@ -202,8 +202,7 @@ func CreateWikiPage(title string, content string) {
 		Format:  &format,
 	}
 	git := GetGitClient()
-	project := GetGitProject()
-	_, _, err := git.Wikis.CreateWikiPage(project.ID, options)
+	_, _, err := git.Wikis.CreateWikiPage(constants.WikiProjectID, options)
 	if err != nil {
 		log.Fatal(err)
 	}

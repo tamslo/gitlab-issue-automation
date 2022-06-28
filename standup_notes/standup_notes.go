@@ -22,9 +22,8 @@ const lookupStart = "2022-04-06"
 
 func getLastNoteDate(currentDate time.Time) time.Time {
 	git := gitlabUtils.GetGitClient()
-	project := gitlabUtils.GetGitProject()
 	options := &gitlab.ListWikisOptions{}
-	wikiPages, _, err := git.Wikis.ListWikis(project.ID, options)
+	wikiPages, _, err := git.Wikis.ListWikis(constants.WikiProjectID, options)
 	if err != nil {
 		log.Fatal(err)
 	}
