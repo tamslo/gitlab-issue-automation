@@ -69,7 +69,6 @@ func WriteNotes(lastTime time.Time) {
 		title := StandupTitlePrefix + issueDueString
 		if !gitlabUtils.WikiPageExists(title) {
 			lastNoteDate := getLastNoteDate(issueDue)
-			log.Println("- Debug: Last note date:", lastNoteDate)
 			orderBy := "updated_at"
 			sortOrder := "desc"
 			issues := gitlabUtils.GetSortedProjectIssues(orderBy, sortOrder, "")
@@ -79,9 +78,7 @@ func WriteNotes(lastTime time.Time) {
 				if boardLabels.HasLabel(issue, constants.TestLabel) || boardLabels.HasLabel(issue, constants.RecurringLabel) {
 					continue
 				}
-				log.Println("- Debug: Issue updated:", issue.UpdatedAt)
-				log.Println("- Debug: Issue relevant:", issue.UpdatedAt.After(lastNoteDate))
-				if issue.UpdatedAt.After(lastNoteDate) {
+				if issue.UpdatedAt.After(lastNoteDate) && !issue.ClosedAt.Before(lastNoteDate) {
 					relevantIssues = append(relevantIssues, issue)
 					projectLabels := []string{}
 					for _, label := range issue.Labels {
@@ -110,7 +107,6 @@ func WriteNotes(lastTime time.Time) {
 					}
 				}
 			}
-			log.Println("- Debug: Relevant issues:", relevantIssues)
 			content := "| :rainbow: Project | :back: What I did | :soon: What I will do | :warning:️ Problems | :pencil: Notes |\n"
 			content += "|-------------------|-------------------|-----------------------|--------------------|----------------|\n"
 			sort.Strings(projects)
@@ -120,6 +116,7 @@ func WriteNotes(lastTime time.Time) {
 			content += "\n"
 			content += "## Issues\n"
 			content += "\n"
+			// TODO: also sort by multiple projects (issues should not occur multiple times)
 			coveredIssueIds := []int{}
 			for _, project := range projects {
 				content += "### " + project + "\n"
