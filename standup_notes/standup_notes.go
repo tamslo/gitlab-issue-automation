@@ -51,7 +51,7 @@ func getComparableLabels(issue *gitlab.Issue) string {
 }
 
 func printIssue(issue *gitlab.Issue) string {
-	issueString := "* [ ]"
+	issueString := "* [ ] "
 	if issue.State == "closed" {
 		issueString += "✅ "
 	} else if issue.State == "opened" {
