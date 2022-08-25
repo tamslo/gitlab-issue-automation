@@ -30,7 +30,10 @@ func GetNext(nextTime time.Time, data *types.Metadata, verbose bool) time.Time {
 			if err != nil {
 				log.Fatal(err)
 			}
-			exceptionApplies := (startTime.Before(nextTime) || dateUtils.AreDatesEqual(startTime, nextTime)) && (endTime.After(nextTime) || dateUtils.AreDatesEqual(endTime, nextTime))
+			// Need to additioanlly check if dates are equal if day but not time fulfill the before or after condition
+			exceptionApplies := (endTime.After(time.Now()) || dateUtils.AreDatesEqual(endTime, time.Now())) &&
+				(startTime.Before(nextTime) || dateUtils.AreDatesEqual(startTime, nextTime)) &&
+				(endTime.After(nextTime) || dateUtils.AreDatesEqual(endTime, nextTime))
 			if exceptionApplies {
 				if verbose {
 					log.Println("-- Applying exception", exceptionDefinition.Id, "for", data.Id, "from", exceptionDefinition.Start, "to", exceptionDefinition.End)
