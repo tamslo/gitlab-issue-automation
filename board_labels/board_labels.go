@@ -46,7 +46,7 @@ func removeLabel(issue *gitlab.Issue, unwantedLabel string) *gitlab.Issue {
 }
 
 func addLabel(issue *gitlab.Issue, label string) *gitlab.Issue {
-	action := "Moving"
+	action := "Adding"
 	preposition := "to"
 	updatedLabels := append(issue.Labels, label)
 	return adaptLabel(issue, label, updatedLabels, action, preposition)
@@ -54,7 +54,8 @@ func addLabel(issue *gitlab.Issue, label string) *gitlab.Issue {
 
 func adaptLabel(issue *gitlab.Issue, label string, updatedLabels gitlab.Labels, action string, preposition string) *gitlab.Issue {
 	issueName := "'" + issue.Title + "'"
-	log.Println("-", action, "issue", issueName, preposition, label)
+	labelName := "'" + label + "'"
+	log.Println("-", action, "label", labelName, preposition, "issue", issueName)
 	options := &gitlab.UpdateIssueOptions{
 		Labels: updatedLabels,
 	}
@@ -104,10 +105,8 @@ func CleanLabels(lastRunTime time.Time) {
 	issueState := "closed"
 	issues := gitlabUtils.GetSortedProjectIssues(orderBy, sortOrder, issueState)
 	for _, issue := range issues {
-		log.Println("-- [DEBUG] Updated at:", issue.UpdatedAt)
 		if issue.UpdatedAt.Before(lastRunTime) {
-			log.Println("-- [DEBUG] Would break now")
-			// break
+			break
 		}
 		for _, statusLabel := range constants.StatusLabels {
 			if HasLabel(issue, statusLabel) {
