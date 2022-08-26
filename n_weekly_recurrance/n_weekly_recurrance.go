@@ -24,23 +24,23 @@ func GetNext(nextTime time.Time, data *types.Metadata, verbose bool) time.Time {
 		if err != nil {
 			log.Fatal(err)
 		}
-		lastIssueDate := *issues[0].CreatedAt
-		lastIssueWeek := dateUtils.GetStartOfWeek(lastIssueDate)
+		lastCreationDate := *issues[0].CreatedAt
+		lastCreationWeek := dateUtils.GetStartOfWeek(lastCreationDate)
 		currentWeek := dateUtils.GetStartOfWeek(time.Now())
-		nextIssueWeek := lastIssueWeek.AddDate(0, 0, 7*data.WeeklyRecurrence)
+		nextIssueWeek := lastCreationWeek.AddDate(0, 0, 7*data.WeeklyRecurrence)
 		daysToAdd := math.Round(nextIssueWeek.Sub(currentWeek).Hours() / 24)
 		if verbose {
 			dueInWeeks := math.Round(math.Abs(daysToAdd / 7))
 			log.Println("-- Next", data.WeeklyRecurrence, "weekly occurrence for", data.Title, "in", dueInWeeks, "week(s)")
 		}
-		nextTime = nextTime.AddDate(0, 0, int(daysToAdd))
 		log.Println("-- Degugging start")
-		log.Println("--- Ordered issues")
-		log.Printf("%+v\n", issues)
-		log.Println("--- Last date")
-		log.Println(lastIssueDate)
-		log.Println("--- Last week")
-		log.Println(lastIssueWeek)
+		log.Println("--- Original next time")
+		log.Println(nextTime)
+		nextTime = nextTime.AddDate(0, 0, int(daysToAdd))
+		log.Println("--- Last creation date")
+		log.Println(lastCreationDate)
+		log.Println("--- Last creation week")
+		log.Println(lastCreationWeek)
 		log.Println("--- Current week")
 		log.Println(currentWeek)
 		log.Println("--- Next week")
