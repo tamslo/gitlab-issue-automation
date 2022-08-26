@@ -3,6 +3,7 @@ package recurrance_exceptions
 import (
 	"errors"
 	"fmt"
+	"gitlab-issue-automation/constants"
 	dateUtils "gitlab-issue-automation/date_utils"
 	gitlabUtils "gitlab-issue-automation/gitlab_utils"
 	types "gitlab-issue-automation/types"
@@ -123,4 +124,25 @@ func exceptionsExist() bool {
 
 func getExceptionsPath() string {
 	return path.Join(gitlabUtils.GetRecurringIssuesPath(), "recurrance_exceptions.yml")
+}
+
+func IsVacationUpcoming() bool {
+	vacationUpcoming := false
+	currentTime := time.Now()
+	if exceptionsExist() {
+		exceptions := parseExceptions().Definitions
+		for _, exception := range exceptions {
+			if strings.HasPrefix(exception.Id, constants.VacationExceptionPrefix) {
+				vacationStart, err := time.Parse(dateUtils.ShortISODateLayout, exception.Start)
+				if err != nil {
+					log.Fatal(err)
+				}
+				if vacationStart.After(currentTime) || dateUtils.AreDatesEqual(currentTime, vacationStart) {
+					// TODO: Get last workday before vacation
+					log.Println("- TODO: Check whether vacation is close")
+				}
+			}
+		}
+	}
+	return vacationUpcoming
 }

@@ -3,6 +3,11 @@ package constants
 const IssueTemplatePath = ".gitlab/recurring_issue_templates/"
 const StandupIssueTemplateName = "prepare-standup.md" // for this template notes will be created
 
+// Vacation issue definitions
+
+const VacationTemplateName = "vacation.md"
+const VacationExceptionPrefix = "vacation-"
+
 // Label definitions
 
 const ThisWeekLabel = "🗓 This week"

@@ -1,6 +1,7 @@
 package recurringIssues
 
 import (
+	"gitlab-issue-automation/constants"
 	gitlabUtils "gitlab-issue-automation/gitlab_utils"
 	nWeeklyRecurrance "gitlab-issue-automation/n_weekly_recurrance"
 	placeholders "gitlab-issue-automation/placeholders"
@@ -10,6 +11,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/ericaro/frontmatter"
@@ -49,12 +51,17 @@ func GetRecurringIssue(path string, lastTime time.Time, verbose bool) (*types.Me
 	if err != nil {
 		return recurringIssue, err
 	}
-	cronExpression, err := cronexpr.Parse(recurringIssue.Crontab)
-	if err != nil {
-		return recurringIssue, err
+	if strings.HasSuffix(path, constants.VacationTemplateName) {
+		log.Println("- TODO: Implement vacation issue creation")
+		// if recurranceExceptions.IsVacationUpcoming() {}
+	} else {
+		cronExpression, err := cronexpr.Parse(recurringIssue.Crontab)
+		if err != nil {
+			return recurringIssue, err
+		}
+		recurringIssue.CronExpression = *cronExpression
+		recurringIssue.NextTime = getNextExecutionTime(lastTime, recurringIssue, verbose)
 	}
-	recurringIssue.CronExpression = *cronExpression
-	recurringIssue.NextTime = getNextExecutionTime(lastTime, recurringIssue, verbose)
 	recurringIssue = placeholders.ApplyPlaceholders(recurringIssue)
 	return recurringIssue, nil
 }

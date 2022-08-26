@@ -88,3 +88,7 @@ A helper will create standup meeting notes on the day of the `prepare-standup` r
 All issues that were updated between the last standup meeting note and the current one that were not closed before the last standup note will be included as a list to help filling out the table (included as template).
 
 By default, the wiki page is created in the wiki of the current project. If the CI/CD variable `GROUP_WIKI_ID` is set to the ID of a group, the page will be created in the wiki of this group.
+
+### Issue for Vacation Start
+
+A special recurring issue can be defined in the issue template `vacation.md`. This issue is created on the last workday before an upcoming vacation (identified as exceptions with IDs starting with `vacation-`).
