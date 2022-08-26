@@ -81,7 +81,7 @@ func processIssueFile(lastTime time.Time) filepath.WalkFunc {
 				return err
 			}
 		} else {
-			log.Println("--", info.Name(), "is due", data.NextTime.Format(time.RFC3339))
+			log.Println("--", info.Name(), "will be due", data.NextTime.Format(time.RFC3339))
 		}
 		return nil
 	}
