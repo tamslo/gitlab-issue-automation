@@ -41,7 +41,7 @@ func GetNext(nextTime time.Time, data *types.Metadata, verbose bool) time.Time {
 			nextNthExecutionWeek = nextNthExecutionWeek.AddDate(0, 0, 7*data.WeeklyRecurrence)
 			log.Println("--- Next nth week iteration")
 			log.Println(nextNthExecutionWeek)
-			if nextNthExecutionWeek.Equal(nextSingleExecutionWeek) || nextNthExecutionWeek.After(nextSingleExecutionWeek) {
+			if dateUtils.AreDatesEqual(nextNthExecutionWeek, nextSingleExecutionWeek) || nextNthExecutionWeek.After(nextSingleExecutionWeek) {
 				print("-- Break condition reached (next week equal or after current week)")
 				break
 			}
