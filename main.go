@@ -16,6 +16,7 @@ func main() {
 	recurringIssues.ProcessIssueFiles(lastRunTime)
 	log.Println("Checking whether to adapt board labels")
 	boardLabels.AdaptLabels()
+	boardLabels.CleanLabels(lastRunTime)
 	log.Println("Checking whether to create standup notes")
 	standupNotes.WriteNotes(lastRunTime)
 	log.Println("Run complete")

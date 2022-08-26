@@ -97,3 +97,22 @@ func AdaptLabels() {
 		}
 	}
 }
+
+func CleanLabels(lastRunTime time.Time) {
+	orderBy := "closed_at"
+	sortOrder := "desc"
+	issueState := "closed"
+	issues := gitlabUtils.GetSortedProjectIssues(orderBy, sortOrder, issueState)
+	for _, issue := range issues {
+		log.Println("-- [DEBUG] Closed at:", issue.ClosedAt)
+		if issue.ClosedAt.Before(lastRunTime) {
+			log.Println("-- [DEBUG] Would break now")
+			// break
+		}
+		for _, statusLabel := range constants.StatusLabels {
+			if HasLabel(issue, statusLabel) {
+				removeLabel(issue, statusLabel)
+			}
+		}
+	}
+}

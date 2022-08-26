@@ -14,4 +14,5 @@ const RecurringLabel = "🔁 Recurring"
 const TestLabel = "🧪 Test"
 
 var ProgressLabels = []string{InProgressLabel, InOfficeLabel, WaitingLabel}
+var StatusLabels = []string{ThisWeekLabel, TodayLabel, InProgressLabel, WaitingLabel, InOfficeLabel}
 var NonProjectLabels = []string{ThisWeekLabel, TodayLabel, InProgressLabel, WaitingLabel, InOfficeLabel, RecurringLabel, TestLabel}
