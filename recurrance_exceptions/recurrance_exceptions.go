@@ -35,12 +35,10 @@ func GetNext(nextTime time.Time, data *types.Metadata, verbose bool) time.Time {
 				(startTime.Before(nextTime) || dateUtils.AreDatesEqual(startTime, nextTime)) &&
 				(endTime.After(nextTime) || dateUtils.AreDatesEqual(endTime, nextTime))
 			if exceptionApplies {
+				nextTime = data.CronExpression.Next(endTime.AddDate(0, 0, 1))
 				if verbose {
 					log.Println("-- Applying exception", exceptionDefinition.Id, "for", data.Id, "from", exceptionDefinition.Start, "to", exceptionDefinition.End)
-				}
-				nextTime = data.CronExpression.Next(endTime)
-				if dateUtils.AreDatesEqual(endTime, nextTime) {
-					nextTime = data.CronExpression.Next(endTime.AddDate(0, 0, 1))
+					log.Println("-- Setting earliest execution date after exception (ignoring n-weekly recurrances for now)")
 				}
 				break
 			}
@@ -69,7 +67,7 @@ func getExceptionDefinition(exceptionDefinitions []types.ExceptionDefinition, ex
 		}
 	}
 	if !definitionFound {
-		log.Fatal(errors.New(fmt.Sprintf("Unknown exception definition %s", exceptionId)))
+		log.Fatal(fmt.Errorf("unknown exception definition %s", exceptionId))
 	}
 	return fillInYearPlaceholdes(exceptionDefinition)
 }
@@ -80,7 +78,7 @@ func fillInYearPlaceholdes(exceptionDefinition types.ExceptionDefinition) types.
 		!strings.Contains(exceptionDefinition.End, YearPlaceholder)) ||
 		(!strings.Contains(exceptionDefinition.Start, YearPlaceholder) &&
 			strings.Contains(exceptionDefinition.End, YearPlaceholder)) {
-		log.Fatal(errors.New("Please use the YEAR place holder always for both dates in the exception definition"))
+		log.Fatal(errors.New("please use the YEAR place holder always for both dates in the exception definition"))
 	}
 	if strings.Contains(exceptionDefinition.Start, YearPlaceholder) &&
 		strings.Contains(exceptionDefinition.End, YearPlaceholder) {
