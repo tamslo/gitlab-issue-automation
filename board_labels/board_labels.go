@@ -99,13 +99,13 @@ func AdaptLabels() {
 }
 
 func CleanLabels(lastRunTime time.Time) {
-	orderBy := "closed_at"
+	orderBy := "updated_at"
 	sortOrder := "desc"
 	issueState := "closed"
 	issues := gitlabUtils.GetSortedProjectIssues(orderBy, sortOrder, issueState)
 	for _, issue := range issues {
-		log.Println("-- [DEBUG] Closed at:", issue.ClosedAt)
-		if issue.ClosedAt.Before(lastRunTime) {
+		log.Println("-- [DEBUG] Updated at:", issue.UpdatedAt)
+		if issue.UpdatedAt.Before(lastRunTime) {
 			log.Println("-- [DEBUG] Would break now")
 			// break
 		}
