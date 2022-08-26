@@ -27,7 +27,13 @@ func GetNext(nextTime time.Time, data *types.Metadata, verbose bool) time.Time {
 		lastCreationDate := *issues[0].CreatedAt
 		lastCreationWeek := dateUtils.GetStartOfWeek(lastCreationDate)
 		currentWeek := dateUtils.GetStartOfWeek(time.Now())
-		nextIssueWeek := lastCreationWeek.AddDate(0, 0, 7*data.WeeklyRecurrence)
+		nextIssueWeek := lastCreationWeek
+		for {
+			nextIssueWeek = nextIssueWeek.AddDate(0, 0, 7*data.WeeklyRecurrence)
+			if nextIssueWeek.Equal(currentWeek) || nextIssueWeek.After(currentWeek) {
+				break
+			}
+		}
 		daysToAdd := math.Round(nextIssueWeek.Sub(currentWeek).Hours() / 24)
 		if verbose {
 			dueInWeeks := math.Round(math.Abs(daysToAdd / 7))
