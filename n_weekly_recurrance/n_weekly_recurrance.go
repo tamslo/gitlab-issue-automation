@@ -34,6 +34,22 @@ func GetNext(nextTime time.Time, data *types.Metadata, verbose bool) time.Time {
 			log.Println("-- Next", data.WeeklyRecurrence, "weekly occurrence for", data.Title, "in", dueInWeeks, "week(s)")
 		}
 		nextTime = nextTime.AddDate(0, 0, int(daysToAdd))
+		log.Println("-- Degugging start")
+		log.Println("--- Ordered issues")
+		log.Printf("%+v\n", issues)
+		log.Println("--- Last date")
+		log.Println(lastIssueDate)
+		log.Println("--- Last week")
+		log.Println(lastIssueWeek)
+		log.Println("--- Current week")
+		log.Println(currentWeek)
+		log.Println("--- Next week")
+		log.Println(nextIssueWeek)
+		log.Println("---Days to add")
+		log.Println(daysToAdd)
+		log.Println("--- Next time")
+		log.Println(nextTime)
+		log.Println("-- Degugging end")
 	}
 	return nextTime
 }
