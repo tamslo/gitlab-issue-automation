@@ -51,17 +51,12 @@ func GetRecurringIssue(path string, lastTime time.Time, verbose bool) (*types.Me
 	if err != nil {
 		return recurringIssue, err
 	}
-	if strings.HasSuffix(path, constants.VacationTemplateName) {
-		log.Println("- TODO: Implement vacation issue creation")
-		// if recurranceExceptions.IsVacationUpcoming() {}
-	} else {
-		cronExpression, err := cronexpr.Parse(recurringIssue.Crontab)
-		if err != nil {
-			return recurringIssue, err
-		}
-		recurringIssue.CronExpression = *cronExpression
-		recurringIssue.NextTime = getNextExecutionTime(lastTime, recurringIssue, verbose)
+	cronExpression, err := cronexpr.Parse(recurringIssue.Crontab)
+	if err != nil {
+		return recurringIssue, err
 	}
+	recurringIssue.CronExpression = *cronExpression
+	recurringIssue.NextTime = getNextExecutionTime(lastTime, recurringIssue, verbose)
 	recurringIssue = placeholders.ApplyPlaceholders(recurringIssue)
 	return recurringIssue, nil
 }
@@ -72,6 +67,11 @@ func processIssueFile(lastTime time.Time) filepath.WalkFunc {
 			return err
 		}
 		if filepath.Ext(path) != ".md" {
+			return nil
+		}
+		if strings.HasSuffix(path, constants.VacationTemplateName) {
+			log.Println("- TODO: Implement vacation issue creation")
+			// if recurranceExceptions.IsVacationUpcoming() {}
 			return nil
 		}
 		log.Println("- Checking", path)
