@@ -26,8 +26,8 @@ func GetNext(nextTime time.Time, data *types.Metadata, verbose bool) time.Time {
 		}
 		lastCreationDate := *issues[0].CreatedAt
 		lastCreationWeek := dateUtils.GetStartOfWeek(lastCreationDate)
-		currentWeek := dateUtils.GetStartOfWeek(time.Now())
-		nextIssueWeek := lastCreationWeek
+		nextSingleExecutionWeek := dateUtils.GetStartOfWeek(nextTime)
+		nextNthExecutionWeek := lastCreationWeek
 		log.Println("-- Degugging start")
 		log.Println("--- Original next time")
 		log.Println(nextTime)
@@ -35,25 +35,25 @@ func GetNext(nextTime time.Time, data *types.Metadata, verbose bool) time.Time {
 		log.Println(lastCreationDate)
 		log.Println("--- Last creation week")
 		log.Println(lastCreationWeek)
-		log.Println("--- Current week")
-		log.Println(currentWeek)
+		log.Println("--- Next single execution week")
+		log.Println(nextSingleExecutionWeek)
 		for {
-			nextIssueWeek = nextIssueWeek.AddDate(0, 0, 7*data.WeeklyRecurrence)
-			log.Println("--- Next week iteration")
-			log.Println(nextIssueWeek)
-			if nextIssueWeek.Equal(currentWeek) || nextIssueWeek.After(currentWeek) {
+			nextNthExecutionWeek = nextNthExecutionWeek.AddDate(0, 0, 7*data.WeeklyRecurrence)
+			log.Println("--- Next nth week iteration")
+			log.Println(nextNthExecutionWeek)
+			if nextNthExecutionWeek.Equal(nextSingleExecutionWeek) || nextNthExecutionWeek.After(nextSingleExecutionWeek) {
 				print("-- Break condition reached (next week equal or after current week)")
 				break
 			}
 		}
-		daysToAdd := math.Round(nextIssueWeek.Sub(currentWeek).Hours() / 24)
+		daysToAdd := math.Round(nextNthExecutionWeek.Sub(nextSingleExecutionWeek).Hours() / 24)
 		if verbose {
-			dueInWeeks := math.Round(math.Abs(daysToAdd / 7))
-			log.Println("-- Next", data.WeeklyRecurrence, "weekly occurrence for", data.Title, "in", dueInWeeks, "week(s)")
+			weeksToAdd := math.Round(math.Abs(daysToAdd / 7))
+			log.Println("-- Next", data.WeeklyRecurrence, "weekly occurrence for", data.Title, "in plus", weeksToAdd, "week(s)")
 		}
 		nextTime = nextTime.AddDate(0, 0, int(daysToAdd))
-		log.Println("--- Next week")
-		log.Println(nextIssueWeek)
+		log.Println("--- Next execution week")
+		log.Println(nextNthExecutionWeek)
 		log.Println("---Days to add")
 		log.Println(daysToAdd)
 		log.Println("--- Next time")
