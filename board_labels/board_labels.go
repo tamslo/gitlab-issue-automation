@@ -86,14 +86,20 @@ func AdaptLabels() {
 		issueHasProgressLabel := hasAnyLabel(issue, constants.ProgressLabels)
 		if !issueHasProgressLabel {
 			issueHasTodayLabel := HasLabel(issue, constants.TodayLabel)
-			issueHasNextWeekLabel := HasLabel(issue, constants.ThisWeekLabel)
+			issueHasThisWeekLabel := HasLabel(issue, constants.ThisWeekLabel)
+			issueHasNextActionsLabel := HasLabel(issue, constants.NextActionsLabel)
 			if (issuePastDue || issueDueToday) && !issueHasTodayLabel {
 				issue = addLabel(issue, constants.TodayLabel)
-				if issueHasNextWeekLabel {
+				issueHasTodayLabel = true
+				if issueHasThisWeekLabel {
 					removeLabel(issue, constants.ThisWeekLabel)
 				}
-			} else if !issueHasTodayLabel && issueDueThisWeek && !issueHasNextWeekLabel {
-				addLabel(issue, constants.ThisWeekLabel)
+			} else if !issueHasTodayLabel && issueDueThisWeek && !issueHasThisWeekLabel {
+				issue = addLabel(issue, constants.ThisWeekLabel)
+				issueHasThisWeekLabel = true
+			}
+			if (issueHasTodayLabel || issueHasThisWeekLabel) && issueHasNextActionsLabel {
+				removeLabel(issue, constants.NextActionsLabel)
 			}
 		}
 	}
