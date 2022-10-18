@@ -17,7 +17,7 @@ import (
 	"github.com/xanzy/go-gitlab"
 )
 
-const StandupTitlePrefix = "Standup-Meetings/"
+const StandupTitlePrefix = "Meetings/Standup/"
 const lookupStart = "2022-04-06"
 
 func getLastNoteDate(currentDate time.Time) time.Time {
