@@ -92,3 +92,5 @@ By default, the wiki page is created in the wiki of the current project. If the 
 ### Issue for Vacation Start
 
 A special recurring issue can be defined in the issue template `vacation.md`. This issue is created on the last workday before an upcoming vacation (identified as exceptions with IDs starting with `vacation-`).
+
+_Not implemented yet, see [#8](https://github.com/tamslo/gitlab-issue-automation/issues/8)._
