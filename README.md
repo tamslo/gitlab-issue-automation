@@ -43,7 +43,7 @@ Create project CI/CD variables:
 
 | Name | Value |
 | ---- | ----- |
-| GITLAB_API_TOKEN | The API access token for the user account that will create the issues (see: https://docs.gitlab.com/ce/user/profile/personal_access_tokens.html) | 
+| GITLAB_API_TOKEN | The API access token for the user account that will create the issues (see: [GitLab docs](https://docs.gitlab.com/ce/user/profile/personal_access_tokens.html)) |
 
 Finally, create a new schedule under the project CI/CD options, ensuring that the pipeline runs at least as often as your most frequent job.
 
@@ -53,9 +53,9 @@ To add exceptions to recurrances, create a file named `recurrance_exceptions.yml
 
 It can contain exception definitions and rules that map issues by their IDs (need to be given in the issue template) to exception definitions.
 
-Start and end dates are given in the format `YYYY-MM-DD`. If an exception occurs every year, the placeholder `YEAR` can be given (needs to be set for both `start` and `end`). 
+Start and end dates are given in the format `YYYY-MM-DD`. If an exception occurs every year, the placeholder `YEAR` can be given (needs to be set for both `start` and `end`).
 
-```
+```yaml
 definitions:
   -
     id: "christmas-break"
