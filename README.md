@@ -53,6 +53,7 @@ Create project CI/CD variables:
 | Name | Value |
 | ---- | ----- |
 | GITLAB_API_TOKEN | The API access token for the user account that will create the issues (see: [GitLab docs](https://docs.gitlab.com/ce/user/profile/personal_access_tokens.html)) |
+| GROUP_WIKI_ID | Optional. Set wiki for standup notes to a group wiki instead of the current project's wiki. |
 
 Finally, create a new schedule under the project CI/CD options, ensuring that
 the pipeline runs at least as often as your most frequent job.
