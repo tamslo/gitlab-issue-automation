@@ -19,7 +19,8 @@ const RecurringLabel = "🔁 Recurring"
 const NextActionsLabel = "⏭ Next actions"
 const SomewhenLabel = "🔮 Somewhen"
 const TestLabel = "🧪 Test"
+const DoneThisWeekLabel = "✅ Done this week"
 
 var ProgressLabels = []string{InProgressLabel}
-var StatusLabels = []string{ThisWeekLabel, TodayLabel, InProgressLabel, WaitingLabel, InOfficeLabel}
-var NonProjectLabels = []string{ThisWeekLabel, TodayLabel, InProgressLabel, WaitingLabel, InOfficeLabel, RecurringLabel, NextActionsLabel, SomewhenLabel, TestLabel}
+var StatusLabels = []string{ThisWeekLabel, TodayLabel, InProgressLabel, WaitingLabel, InOfficeLabel, DoneThisWeekLabel}
+var NonProjectLabels = []string{ThisWeekLabel, TodayLabel, InProgressLabel, WaitingLabel, InOfficeLabel, RecurringLabel, NextActionsLabel, SomewhenLabel, TestLabel, DoneThisWeekLabel}
