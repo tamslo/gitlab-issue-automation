@@ -21,6 +21,6 @@ const SomewhenLabel = "🔮 Somewhen"
 const TestLabel = "🧪 Test"
 const DoneThisWeekLabel = "✅ Done this week"
 
-var ProgressLabels = []string{InProgressLabel}
+var ProgressLabels = []string{InProgressLabel, DoneThisWeekLabel}
 var StatusLabels = []string{ThisWeekLabel, TodayLabel, InProgressLabel, WaitingLabel, InOfficeLabel, DoneThisWeekLabel}
 var NonProjectLabels = []string{ThisWeekLabel, TodayLabel, InProgressLabel, WaitingLabel, InOfficeLabel, RecurringLabel, NextActionsLabel, SomewhenLabel, TestLabel, DoneThisWeekLabel}
