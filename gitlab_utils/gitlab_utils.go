@@ -60,6 +60,11 @@ func GetGroupWikiId() string {
 	return GetEnvVariable(&envVariableParameters{Name: "GROUP_WIKI_ID", Optional: true})
 }
 
+func GetForceStandupNotesForToday() bool {
+	variable := GetEnvVariable(&envVariableParameters{Name: "FORCE_STANDUP_NOTES_FOR_TODAY", Optional: true})
+	return variable == "TRUE"
+}
+
 func GetGitClient() *gitlab.Client {
 	transCfg := &http.Transport{
 		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},

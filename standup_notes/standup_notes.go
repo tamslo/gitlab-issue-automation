@@ -65,11 +65,85 @@ func printIssue(issue *gitlab.Issue) string {
 	return issueString
 }
 
-func WriteNotes(lastTime time.Time) {
+func CreateNotes(noteDate time.Time) {
+	noteName := dateUtils.GetEnDashDate(noteDate)
+	title := StandupTitlePrefix + noteName
+	if !gitlabUtils.WikiPageExists(title) {
+		lastNoteDate := getLastNoteDate(noteDate)
+		orderBy := "updated_at"
+		sortOrder := "desc"
+		issues := gitlabUtils.GetSortedProjectIssues(orderBy, sortOrder, "")
+		relevantIssues := []*gitlab.Issue{}
+		projects := []string{}
+		for _, issue := range issues {
+			if boardLabels.HasLabel(issue, constants.TestLabel) || boardLabels.HasLabel(issue, constants.RecurringLabel) {
+				continue
+			}
+			if issue.UpdatedAt.After(lastNoteDate) {
+				if issue.State != "closed" || (issue.State == "closed" && issue.ClosedAt.After(lastNoteDate)) {
+					relevantIssues = append(relevantIssues, issue)
+					projectLabels := []string{}
+					for _, label := range issue.Labels {
+						isNonProjectLabel := true
+						for _, nonProjectLabel := range constants.NonProjectLabels {
+							if label == nonProjectLabel {
+								isNonProjectLabel = false
+								break
+							}
+						}
+						if isNonProjectLabel {
+							projectLabels = append(projectLabels, label)
+						}
+					}
+					for _, label := range projectLabels {
+						labelInProjects := false
+						for _, project := range projects {
+							if label == project {
+								labelInProjects = true
+								break
+							}
+						}
+						if !labelInProjects {
+							projects = append(projects, label)
+						}
+					}
+				}
+			}
+		}
+		content := "| :rainbow: Project | :back: What I did | :soon: What I will do | :warning:️ Problems | :pencil: Notes |\n"
+		content += "|-------------------|-------------------|-----------------------|--------------------|----------------|\n"
+		sort.Strings(projects)
+		for _, project := range projects {
+			content += "| " + project + " |  |  |  |  |\n"
+		}
+		content += "\n"
+		content += "## Issues\n"
+		content += "\n"
+
+		sort.Slice(relevantIssues, func(firstIndex, secondIndex int) bool {
+			firstLabels := getComparableLabels(relevantIssues[firstIndex])
+			secondLabels := getComparableLabels(relevantIssues[secondIndex])
+			return firstLabels < secondLabels
+		})
+		for _, issue := range relevantIssues {
+			content += printIssue(issue)
+		}
+		log.Println("- Creating new wiki page", title)
+		gitlabUtils.CreateWikiPage(title, content)
+	} else {
+		log.Println("- Skipping creation of wiki page", title, "because it already exists")
+	}
+}
+
+func WriteNotes(lastTime time.Time, forceStandupNotesForToday bool) {
+	if (forceStandupNotesForToday) {
+		CreateNotes(time.Now())
+	}
 	standupIssuePath := filepath.Join(gitlabUtils.GetRecurringIssuesPath(), constants.StandupIssueTemplateName)
 	_, err := os.Stat(standupIssuePath)
 	standupIssueExists := err == nil
 	if !standupIssueExists {
+		log.Println("- Skipping creation of standup notes because no issue exists")
 		return
 	}
 	verbose := false
@@ -77,74 +151,10 @@ func WriteNotes(lastTime time.Time) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	if standupIssue.NextTime.Before(time.Now()) {
-		issueDue := gitlabUtils.GetIssueDueDate(standupIssue)
-		issueDueString := dateUtils.GetEnDashDate(issueDue)
-		title := StandupTitlePrefix + issueDueString
-		if !gitlabUtils.WikiPageExists(title) {
-			lastNoteDate := getLastNoteDate(issueDue)
-			orderBy := "updated_at"
-			sortOrder := "desc"
-			issues := gitlabUtils.GetSortedProjectIssues(orderBy, sortOrder, "")
-			relevantIssues := []*gitlab.Issue{}
-			projects := []string{}
-			for _, issue := range issues {
-				if boardLabels.HasLabel(issue, constants.TestLabel) || boardLabels.HasLabel(issue, constants.RecurringLabel) {
-					continue
-				}
-				if issue.UpdatedAt.After(lastNoteDate) {
-					if issue.State != "closed" || (issue.State == "closed" && issue.ClosedAt.After(lastNoteDate)) {
-						relevantIssues = append(relevantIssues, issue)
-						projectLabels := []string{}
-						for _, label := range issue.Labels {
-							isNonProjectLabel := true
-							for _, nonProjectLabel := range constants.NonProjectLabels {
-								if label == nonProjectLabel {
-									isNonProjectLabel = false
-									break
-								}
-							}
-							if isNonProjectLabel {
-								projectLabels = append(projectLabels, label)
-							}
-						}
-						for _, label := range projectLabels {
-							labelInProjects := false
-							for _, project := range projects {
-								if label == project {
-									labelInProjects = true
-									break
-								}
-							}
-							if !labelInProjects {
-								projects = append(projects, label)
-							}
-						}
-					}
-				}
-			}
-			content := "| :rainbow: Project | :back: What I did | :soon: What I will do | :warning:️ Problems | :pencil: Notes |\n"
-			content += "|-------------------|-------------------|-----------------------|--------------------|----------------|\n"
-			sort.Strings(projects)
-			for _, project := range projects {
-				content += "| " + project + " |  |  |  |  |\n"
-			}
-			content += "\n"
-			content += "## Issues\n"
-			content += "\n"
-
-			sort.Slice(relevantIssues, func(firstIndex, secondIndex int) bool {
-				firstLabels := getComparableLabels(relevantIssues[firstIndex])
-				secondLabels := getComparableLabels(relevantIssues[secondIndex])
-				return firstLabels < secondLabels
-			})
-			for _, issue := range relevantIssues {
-				content += printIssue(issue)
-			}
-			log.Println("- Creating new wiki page", title)
-			gitlabUtils.CreateWikiPage(title, content)
-		} else {
-			log.Println("- Skipping creation of wiki page", title, "because it already exists")
-		}
+	issueDue := gitlabUtils.GetIssueDueDate(standupIssue)
+	if dateUtils.AreDatesEqual(issueDue, time.Now()) {
+		CreateNotes(issueDue)
+	} else {
+		log.Println("- Skipping creation of standup notes because it is not due yet")
 	}
 }
