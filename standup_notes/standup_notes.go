@@ -137,6 +137,7 @@ func CreateNotes(noteDate time.Time) {
 
 func WriteNotes(lastTime time.Time, forceStandupNotesForToday bool) {
 	if (forceStandupNotesForToday) {
+		log.Println("- Forcing creating standup notes for today")
 		CreateNotes(time.Now())
 	}
 	standupIssuePath := filepath.Join(gitlabUtils.GetRecurringIssuesPath(), constants.StandupIssueTemplateName)
