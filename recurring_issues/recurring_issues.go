@@ -71,6 +71,9 @@ func processIssueFile(lastTime time.Time) filepath.WalkFunc {
 		}
 		if strings.HasSuffix(path, constants.VacationTemplateName) {
 			log.Println("- TODO: Implement vacation issue creation")
+			// Should create issue on start of the week before the vacation
+			// (if vacation starts on Monday the week before that) and
+			// set due for last day of work before vacation
 			// if recurranceExceptions.IsVacationUpcoming() {}
 			return nil
 		}
